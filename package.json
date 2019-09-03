@@ -1,0 +1,54 @@
+{
+  "name": "electron-force",
+  "version": "0.0.1",
+  "description": "An Electron Wrapper on JSForce",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "lint": "eslint --ignore-path .gitignore src",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder -wlm",
+    "postinstall": "electron-builder install-app-deps",
+    "test": "mocha"
+  },
+  "build": {
+    "appId": "com.electron.electronForce",
+    "productName": "ElectronForce",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": "zip"
+    },
+    "win": {
+      "target": "zip"
+    },
+    "linux": {
+      "target": "zip"
+    }
+  },
+  "keywords": [
+    "Electron",
+    "JSForce",
+    "Salesforce"
+  ],
+  "author": "Aaron Crosman <acrosman@gmail.com> (https://spinningcode.org)",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "electron-debug": "^2.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.1",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "jquery": "^3.4.1",
+    "jsforce": "^1.9.2",
+    "popper.js": "^1.15.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "debug-menu": "^0.6.1",
+    "electron": "^3.1.13",
+    "electron-builder": "^20.44.4",
+    "mocha": "^5.2.0"
+  }
+}
