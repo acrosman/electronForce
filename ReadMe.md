@@ -2,7 +2,7 @@
 
 This is a basic proof-of-concept level wrapper of Electron around JSForce. The intention is to do more interesting things in the future, but first having a simple cross-platform application to run Salesforce API calls in an interface seems useful.
 
-## Longer Term Vision
+## Larger Vision
 
 Create a tool that not only can explore and interact with the Salesforce APIs, but also documents, tracks, and reports on elements of a build that are critical for integrations with 3rd party solutions.
 
