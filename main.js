@@ -1,12 +1,18 @@
 const electron = require('electron');
+const jsforce = require('jsforce');
+
 // Module to control application life.
 const {
   app,
   BrowserWindow,
+  ipcMain,
 } = electron;
 require('electron-debug')();
 const path = require('path');
 const url = require('url');
+
+// Get rid of the deprecated default.
+app.allowRendererProcessReuse = true;
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -20,7 +26,7 @@ function createWindow() {
     height: display.workArea.height,
     frame: true,
     webPreferences: {
-      nodeIntegration: false, // Disabling nodeIntegration for security.
+      nodeIntegration: false, // Disable nodeIntegration for security.
       contextIsolation: true, // Enabling contextIsolation for security.
       preload: path.join(app.getAppPath(), 'preload.js'),
     },
@@ -65,4 +71,36 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+// @TODO: Break out the definition of all these into a file and just bulk load.
+ipcMain.on('sfLogin', (event, args) => {
+  const conn = new jsforce.Connection({
+    // you can change loginUrl to connect to sandbox or prerelease env.
+    loginUrl: args.url,
+  });
+  conn.login(args.username, args.password, (err, userInfo) => {
+    if (err) {
+      console.error(err);
+      mainWindow.webContents.send('sfOrgId', {
+        status: false,
+        message: 'Login Failed',
+        user: null,
+      });
+      return;
+    }
+    // Now you can get the access token and instance URL information.
+    // Save them to establish connection next time.
+    console.log(conn.accessToken);
+    console.log(conn.instanceUrl);
+    // logged in user property
+    console.log(`User ID: ${userInfo.id}`);
+    console.log(`Org ID: ${userInfo.organizationId}`);
+
+    mainWindow.webContents.send('sfOrgId', {
+      status: true,
+      message: 'Login Successful',
+      user: userInfo,
+    });
+  });
 });
