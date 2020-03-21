@@ -4,7 +4,7 @@ This is a basic proof-of-concept level wrapper of Electron around JSForce. The i
 
 ## Larger Vision
 
-Create a tool that not only can explore and interact with the Salesforce APIs, but also documents, tracks, and reports on elements of a build that are critical for integrations with 3rd party solutions.
+Create a tool that not only can explore and interact with the Salesforce APIs, but also documents, tracks, and reports on elements of a build that are critical for integrations with 3rd party solutions. And while we're at it, Data Loader needs a replacement.
 
 It will need to:
 1. Connect to one or more orgs.
