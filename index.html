@@ -17,10 +17,15 @@
             <form>
                 <label for="login-username">User Name</label><input type="text" id="login-username"><br>
                 <label for="login-password">Password</label><input type="password" id="login-password"><br>
-                <label for="login-token">Password</label><input type="password" id="login-token"><br>
+                <label for="login-token">Security Token</label><input type="password" id="login-token"><br>
                 <label for="login-url">Login URL</label><input type="url" id="login-url" value="https://login.salesforce.com"><br>
                 <input type="button" id="login-trigger" value="Login">
             </form>
+        </div>
+        <div id="org-status">
+            <p>Message: <span id="login-response-message"></span><br>
+            Org Id: <span id="active-org-id"></span></p>
+            <input type="button" id="logout-trigger" value="Logout">
         </div>
     </body>
     <script type="module" src="render.js"></script>

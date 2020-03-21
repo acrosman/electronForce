@@ -88,7 +88,7 @@ ipcMain.on('sfLogin', (event, args) => {
   conn.login(args.username, password, (err, userInfo) => {
     if (err) {
       console.error(err);
-      mainWindow.webContents.send('sfOrgId', {
+      mainWindow.webContents.send('sfShowOrgId', {
         status: false,
         message: 'Login Failed',
         user: null,
@@ -103,7 +103,7 @@ ipcMain.on('sfLogin', (event, args) => {
     console.log(`User ID: ${userInfo.id}`);
     console.log(`Org ID: ${userInfo.organizationId}`);
 
-    mainWindow.webContents.send('sfOrgId', {
+    mainWindow.webContents.send('sfShowOrgId', {
       status: true,
       message: 'Login Successful',
       user: userInfo,
