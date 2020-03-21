@@ -8,6 +8,7 @@ document.getElementById('login-trigger').addEventListener('click', (event) => {
   window.api.send('sfLogin', {
     username: document.getElementById('login-username').value,
     password: document.getElementById('login-password').value,
+    token: document.getElementById('login-token').value,
     url: document.getElementById('login-url').value,
   });
 });

@@ -79,7 +79,13 @@ ipcMain.on('sfLogin', (event, args) => {
     // you can change loginUrl to connect to sandbox or prerelease env.
     loginUrl: args.url,
   });
-  conn.login(args.username, args.password, (err, userInfo) => {
+
+  let password = args.password;
+  if (args.token !== '') {
+    password = `${password}${args.token}`;
+  }
+
+  conn.login(args.username, password, (err, userInfo) => {
     if (err) {
       console.error(err);
       mainWindow.webContents.send('sfOrgId', {
