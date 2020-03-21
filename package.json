@@ -33,22 +33,25 @@
   "author": "Aaron Crosman <acrosman@gmail.com> (https://spinningcode.org)",
   "license": "MIT",
   "dependencies": {
+    "electron": "^8.1.1",
     "bootstrap": "^4.4.1",
     "electron-debug": "^2.2.0",
-    "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",
-    "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.19.0",
     "jquery": "^3.4.1",
     "jsforce": "^1.9.3",
+    "minimist": "^1.2.5",
+    "mkdirp": "^1.0.3",
     "popper.js": "^1.16.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "debug-menu": "^0.6.1",
-    "electron": "^3.1.13",
     "electron-builder": "^20.44.4",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
     "mocha": "^7.1.1"
   }
 }
