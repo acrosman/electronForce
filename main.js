@@ -28,13 +28,13 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false, // Disable nodeIntegration for security.
       contextIsolation: true, // Enabling contextIsolation for security.
-      preload: path.join(app.getAppPath(), 'preload.js'),
+      preload: path.join(app.getAppPath(), 'app/preload.js'),
     },
   });
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
-    pathname: path.join(app.getAppPath(), 'index.html'),
+    pathname: path.join(app.getAppPath(), 'app/index.html'),
     protocol: 'file:',
     slashes: true,
   }));

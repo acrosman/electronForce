@@ -5,11 +5,11 @@ const replaceText = (selector, text) => {
 
 // Response handlers from IPC Messages to render context.
 window.api.receive('sfShowOrgId', (data) => {
-  console.log(`Received ${data} from main process`);
+  console.log('Received sfShowOrgId from main process');
   if (data.status) {
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('org-status').style.display = 'block';
-    replaceText('active-org-id', data.organizationId);
+    replaceText('active-org-id', data.user.organizationId);
     replaceText('login-response-message', data.message);
   }
 });
