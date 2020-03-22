@@ -18,6 +18,11 @@ app.allowRendererProcessReuse = true;
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
+// A global collection of the various SF Org connections currently open in the
+// app.
+// @TODOL: find a better way to do this that isn't a global.
+const sfConnections = {};
+
 function createWindow() {
   const display = electron.screen.getPrimaryDisplay();
   // Create the browser window.
@@ -74,7 +79,7 @@ app.on('activate', () => {
 });
 
 // @TODO: Break out the definition of all these into a file and just bulk load.
-ipcMain.on('sfLogin', (event, args) => {
+ipcMain.on('sf_login', (event, args) => {
   const conn = new jsforce.Connection({
     // you can change loginUrl to connect to sandbox or prerelease env.
     loginUrl: args.url,
@@ -103,7 +108,10 @@ ipcMain.on('sfLogin', (event, args) => {
     console.log(`User ID: ${userInfo.id}`);
     console.log(`Org ID: ${userInfo.organizationId}`);
 
-    mainWindow.webContents.send('sfShowOrgId', {
+    // Save the next connection in the global storage.
+    sfConnections[userInfo.organizationId] = conn;
+
+    mainWindow.webContents.send('response_login', {
       status: true,
       message: 'Login Successful',
       response: userInfo,
@@ -111,6 +119,27 @@ ipcMain.on('sfLogin', (event, args) => {
   });
 });
 
-ipcMain.on('sfLogin', (event, args) => {
-  const conn = null;
+/**
+ * Logout of a Salesforce org.
+ */
+ipcMain.on('sf_logout', (event, args) => {
+  const conn = sfConnections[args.org];
+  conn.logout((err) => {
+    if (err) {
+      mainWindow.webContents.send('response_logout', {
+        status: false,
+        message: 'Logout Failed',
+        response: err,
+      });
+      console.error(err);
+      return false;
+    }
+    // now the session has been expired.
+    mainWindow.webContents.send('response_logout', {
+      status: true,
+      message: 'Logout Successful',
+      response: {},
+    });
+    return true;
+  });
 });
