@@ -27,7 +27,10 @@ contextBridge.exposeInMainWorld(
     receive: (channel, func) => {
       const validChannels = ['sfShowOrgId'];
       if (validChannels.includes(channel)) {
-        ipcRenderer.on(channel, (event, ...args) => fn(...args));
+        ipcRenderer.on(
+          channel,
+          (event, ...args) => func(...args),
+        );
       }
     },
   },

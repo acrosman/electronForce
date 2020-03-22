@@ -80,7 +80,7 @@ ipcMain.on('sfLogin', (event, args) => {
     loginUrl: args.url,
   });
 
-  let password = args.password;
+  let { password } = args;
   if (args.token !== '') {
     password = `${password}${args.token}`;
   }
@@ -109,4 +109,8 @@ ipcMain.on('sfLogin', (event, args) => {
       user: userInfo,
     });
   });
+});
+
+ipcMain.on('sfLogin', (event, args) => {
+  const conn = null;
 });
