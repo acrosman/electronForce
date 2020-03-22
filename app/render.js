@@ -1,21 +1,26 @@
+// ============= Helpers ==============
 const replaceText = (selector, text) => {
   const element = document.getElementById(selector);
   if (element) element.innerText = text;
 };
 
-// Response handlers from IPC Messages to render context.
+const displayRawResponse = (responseObject) => {
+  replaceText('raw-response', JSON.stringify(responseObject, undefined, 2));
+};
+
+// ===== Response handlers from IPC Messages to render context ======
 window.api.receive('sfShowOrgId', (data) => {
   console.log('Received sfShowOrgId from main process');
   if (data.status) {
     document.getElementById('login-form').style.display = 'none';
     document.getElementById('org-status').style.display = 'block';
-    replaceText('active-org-id', data.user.organizationId);
+    replaceText('active-org-id', data.response.organizationId);
     replaceText('login-response-message', data.message);
+    displayRawResponse(data.response);
   }
 });
 
-// Messages to the main process.
-
+// ========= Messages to the main process ===============
 // Login
 document.getElementById('login-trigger').addEventListener('click', (event) => {
   window.api.send('sfLogin', {
@@ -33,5 +38,6 @@ document.getElementById('logout-trigger').addEventListener('click', () => {
   document.getElementById('org-status').style.display = 'none';
 });
 
-// Inital page setup.
+
+// ================== Inital page setup =====================
 document.getElementById('org-status').style.display = 'none';

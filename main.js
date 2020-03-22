@@ -91,7 +91,7 @@ ipcMain.on('sfLogin', (event, args) => {
       mainWindow.webContents.send('sfShowOrgId', {
         status: false,
         message: 'Login Failed',
-        user: null,
+        response: err,
       });
       return;
     }
@@ -106,7 +106,7 @@ ipcMain.on('sfLogin', (event, args) => {
     mainWindow.webContents.send('sfShowOrgId', {
       status: true,
       message: 'Login Successful',
-      user: userInfo,
+      response: userInfo,
     });
   });
 });
