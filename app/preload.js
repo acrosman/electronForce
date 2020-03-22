@@ -1,5 +1,5 @@
 // Preload script.
-const { contextBridge, ipcRenderer, session } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 document.addEventListener('DOMContentLoaded', () => {
   const replaceText = (selector, text) => {

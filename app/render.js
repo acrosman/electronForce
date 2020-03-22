@@ -34,7 +34,7 @@ window.api.receive('response_logout', (data) => {
 
 // ========= Messages to the main process ===============
 // Login
-document.getElementById('login-trigger').addEventListener('click', (event) => {
+document.getElementById('login-trigger').addEventListener('click', () => {
   window.api.send('sf_login', {
     username: document.getElementById('login-username').value,
     password: document.getElementById('login-password').value,
