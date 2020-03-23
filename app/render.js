@@ -90,13 +90,27 @@ Object.keys(apiSelectors).forEach((selector) => {
   element = document.getElementById(selector);
   if (element) {
     element.style.display = 'none';
-    element.getElementsByClassName('sf-api-trigger-button')[0].addEventListener('click', () => {
-      const dataElements = element.getElementsByClassName('api-data-element');
+    const trigger = element.getElementsByClassName('sf-api-trigger-button')[0];
+    trigger.wrapperElement = element;
+    trigger.addEventListener('click', (event) => {
+      const dataElements = event.currentTarget.wrapperElement.getElementsByClassName('api-data-element');
       const data = { org: document.getElementById('active-org').value };
       for (let i = 0; i < dataElements.length; i += 1) {
         data[dataElements[i].name] = dataElements[i].value;
       }
       window.api.send(`sf_${apiSelectors[selector]}`, data);
     });
+  }
+});
+
+document.getElementById('select-api').addEventListener('change', () => {
+  const selectElement = document.getElementById('select-api');
+  const newValue = selectElement.value;
+
+  document.getElementById(newValue).style.display = 'block';
+  for (let i = 0; i < selectElement.options.length; i += 1) {
+    if (selectElement.options[i].value !== newValue) {
+      document.getElementById(selectElement.options[i].value).style.display = 'none';
+    }
   }
 });
