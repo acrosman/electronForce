@@ -168,5 +168,6 @@ ipcMain.on('sf_query', (event, args) => {
       message: 'Request',
       response: result,
     });
+    return true;
   });
 });
