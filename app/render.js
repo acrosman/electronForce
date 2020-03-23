@@ -9,6 +9,7 @@ const displayRawResponse = (responseObject) => {
 };
 
 // ===== Response handlers from IPC Messages to render context ======
+// Login response.
 window.api.receive('response_login', (data) => {
   console.log('Received Login response from main process');
   if (data.status) {
@@ -21,14 +22,22 @@ window.api.receive('response_login', (data) => {
 
     // Shuffle what's shown.
     document.getElementById('org-status').style.display = 'block';
+    document.getElementById('api-request-form').style.display = 'block';
     replaceText('active-org-id', data.response.organizationId);
     replaceText('login-response-message', data.message);
     displayRawResponse(data.response);
   }
 });
 
+// Logout Response.
 window.api.receive('response_logout', (data) => {
   console.log('Received Logout response from main process');
+  displayRawResponse(data);
+});
+
+// Generic Response.
+window.api.receive('response_generic', (data) => {
+  console.log('Received Generic response from main process');
   displayRawResponse(data);
 });
 
@@ -53,5 +62,41 @@ document.getElementById('logout-trigger').addEventListener('click', () => {
 
 
 // ================== Inital page setup =====================
+
+// Hide the information for handling responses.
 document.getElementById('org-status').style.display = 'none';
 document.getElementById('api-request-form').style.display = 'none';
+
+// Setup to show/hide all the various controls needed for the APIs.
+// Initially this is deeply insufficient, when enough controls exist this code
+// style will be really really unmaintainable.
+// @TODO: Do this better!
+const apiSelectors = {
+  'rest-api-soql': 'query',
+  'rest-api-sosl': undefined,
+  'rest-api-crud': undefined,
+  'rest-api-describe': undefined,
+  'rest-api-apex': undefined,
+  'analytics-api': undefined,
+  'bulk-api': undefined,
+  'chatter-api': undefined,
+  'metadata-api': undefined,
+  'streaming-api': undefined,
+  'tooling-api': undefined,
+};
+
+let element;
+Object.keys(apiSelectors).forEach((selector) => {
+  element = document.getElementById(selector);
+  if (element) {
+    element.style.display = 'none';
+    element.getElementsByClassName('sf-api-trigger-button')[0].addEventListener('click', () => {
+      const dataElements = element.getElementsByClassName('api-data-element');
+      const data = { org: document.getElementById('active-org').value };
+      for (let i = 0; i < dataElements.length; i += 1) {
+        data[dataElements[i].name] = dataElements[i].value;
+      }
+      window.api.send(`sf_${apiSelectors[selector]}`, data);
+    });
+  }
+});

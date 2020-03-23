@@ -35,7 +35,26 @@
                         </form>
                     </div>
                     <div id="api-request-form">
-
+                        <label for="select-api">Select API</label>
+                        <select id="select-api">
+                            <option value="rest-api-soql">SOQL Query (REST API)</option>
+                            <option value="rest-api-sosl">SOSL Query (REST API)</option>
+                            <option value="rest-api-crud">Object CRUD (REST API)</option>
+                            <option value="rest-api-describe">Describe (REST API)</option>
+                            <option value="rest-api-apex">Apex REST</option>
+                            <option value="analytics-api">Analytics API</option>
+                            <option value="bulk-api">Bulk API</option>
+                            <option value="chatter-api">Chatter API</option>
+                            <option value="metadata-api">Metadata API</option>
+                            <option value="streaming-api">Streaming API</option>
+                            <option value="tooling-api">Tooling API</option>
+                        </select>
+                        <p><em>Note: not all APIs currently implemented in this interface.</em></p>
+                        <div id="rest-api-soql">
+                            <label for="rest-api-soql-text">Query:</label>
+                            <textarea id="rest-api-soql-text" class="api-data-element"></textarea>
+                            <input type="button" id="rest-api-sosql-trigger" value="Execute Query" class="sf-api-trigger-button">
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">

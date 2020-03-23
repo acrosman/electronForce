@@ -79,6 +79,8 @@ app.on('activate', () => {
 });
 
 // @TODO: Break out the definition of all these into a file and just bulk load.
+
+// Handle Salesforce Login
 ipcMain.on('sf_login', (event, args) => {
   const conn = new jsforce.Connection({
     // you can change loginUrl to connect to sandbox or prerelease env.
@@ -141,5 +143,30 @@ ipcMain.on('sf_logout', (event, args) => {
       response: {},
     });
     return true;
+  });
+});
+
+/**
+ * Query Salesforce.
+ */
+ipcMain.on('sf_query', (event, args) => {
+  const conn = sfConnections[args.org];
+  conn.query(args['rest-api-soql-text'], (err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_logout', {
+        status: false,
+        message: 'Logout Failed',
+        response: err,
+      });
+      return console.error(err);
+    }
+    console.log(`total : ${result.totalSize}`);
+    console.log(`fetched : ${result.records.length}`);
+    // now the session has been expired.
+    mainWindow.webContents.send('response_generic', {
+      status: true,
+      message: 'Request',
+      response: result,
+    });
   });
 });

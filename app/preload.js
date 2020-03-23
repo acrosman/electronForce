@@ -19,13 +19,13 @@ contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
       // whitelist channels
-      const validChannels = ['sf_login', 'sf_logout'];
+      const validChannels = ['sf_login', 'sf_logout', 'sf_query'];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
       }
     },
     receive: (channel, func) => {
-      const validChannels = ['response_login', 'response_logout'];
+      const validChannels = ['response_login', 'response_logout', 'response_generic'];
       if (validChannels.includes(channel)) {
         // Remove the event to avoid information leaks.
         ipcRenderer.on(channel, (event, ...args) => func(...args));
