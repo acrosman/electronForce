@@ -96,7 +96,7 @@ Object.keys(apiSelectors).forEach((selector) => {
       const dataElements = event.currentTarget.wrapperElement.getElementsByClassName('api-data-element');
       const data = { org: document.getElementById('active-org').value };
       for (let i = 0; i < dataElements.length; i += 1) {
-        data[dataElements[i].name] = dataElements[i].value;
+        data[dataElements[i].id.replace(/-/g, '_')] = dataElements[i].value;
       }
       window.api.send(`sf_${apiSelectors[selector]}`, data);
     });
