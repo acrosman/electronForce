@@ -150,9 +150,8 @@ ipcMain.on('sf_logout', (event, args) => {
  * Query Salesforce.
  */
 ipcMain.on('sf_query', (event, args) => {
-  const { org, rest_api_soql_text } = args;
-  const conn = sfConnections[org];
-  conn.query(rest_api_soql_text, (err, result) => {
+  const conn = sfConnections[args.org];
+  conn.query(args.rest_api_soql_text, (err, result) => {
     if (err) {
       mainWindow.webContents.send('response_logout', {
         status: false,
