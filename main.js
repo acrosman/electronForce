@@ -153,19 +153,17 @@ ipcMain.on('sf_query', (event, args) => {
   const conn = sfConnections[args.org];
   conn.query(args.rest_api_soql_text, (err, result) => {
     if (err) {
-      mainWindow.webContents.send('response_logout', {
+      mainWindow.webContents.send('response_generic', {
         status: false,
-        message: 'Logout Failed',
+        message: 'Query Failed',
         response: err,
       });
       return console.error(err);
     }
-    console.log(`total : ${result.totalSize}`);
-    console.log(`fetched : ${result.records.length}`);
     // now the session has been expired.
-    mainWindow.webContents.send('response_generic', {
+    mainWindow.webContents.send('response_query', {
       status: true,
-      message: 'Request',
+      message: 'Query Successful',
       response: result,
     });
     return true;

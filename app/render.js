@@ -8,6 +8,49 @@ const displayRawResponse = (responseObject) => {
   replaceText('raw-response', JSON.stringify(responseObject, undefined, 2));
 };
 
+const refreshResponseTable = (sObjectData) => {
+  document.getElementById('results-table-wrapper').style.display = 'block';
+  document.getElementById('results-summary-count').innerText = `Fetched ${sObjectData.records.length} of ${sObjectData.totalSize} records`;
+
+  // Get the table.
+  const resultsTable = document.querySelector('#results-table');
+
+  // Clear existing table.
+  while (resultsTable.firstChild) {
+    resultsTable.removeChild(resultsTable.firstChild);
+  }
+
+  // Extract the header.
+  const keys = Object.keys(sObjectData.records[0]).filter((value) => value !== 'attributes');
+
+  // Create the header row for the table.
+  const headRow = document.createElement('tr');
+  headRow.setAttribute('class', 'results-table-header');
+  let newHeader;
+  let textNode;
+  for (let i = 0; i < keys.length; i += 1) {
+    newHeader = document.createElement('th');
+    textNode = document.createTextNode(keys[i]);
+    newHeader.appendChild(textNode);
+    headRow.appendChild(newHeader);
+  }
+  resultsTable.appendChild(headRow);
+
+  // Add the data.
+  let dataRow;
+  let newData;
+  for (let i = 0; i < sObjectData.records.length; i += 1) {
+    dataRow = document.createElement('tr');
+    for (let j = 0; j < keys.length; j += 1) {
+      newData = document.createElement('td');
+      textNode = document.createTextNode(sObjectData.records[i][keys[j]]);
+      newData.appendChild(textNode);
+      dataRow.appendChild(newData);
+    }
+    resultsTable.appendChild(dataRow);
+  }
+};
+
 // ===== Response handlers from IPC Messages to render context ======
 // Login response.
 window.api.receive('response_login', (data) => {
@@ -33,12 +76,24 @@ window.api.receive('response_login', (data) => {
 window.api.receive('response_logout', (data) => {
   console.log('Received Logout response from main process');
   displayRawResponse(data);
+  // TODO: Remove connection information.
 });
 
 // Generic Response.
 window.api.receive('response_generic', (data) => {
   console.log('Received Generic response from main process');
   displayRawResponse(data);
+});
+
+// Query Response. Print the query results in table.
+window.api.receive('response_query', (data) => {
+  console.log('Received Query response from main process');
+  if (data.status) {
+    displayRawResponse(data);
+    refreshResponseTable(data.response);
+  } else {
+    displayRawResponse(data.message);
+  }
 });
 
 // ========= Messages to the main process ===============
@@ -66,6 +121,8 @@ document.getElementById('logout-trigger').addEventListener('click', () => {
 // Hide the information for handling responses.
 document.getElementById('org-status').style.display = 'none';
 document.getElementById('api-request-form').style.display = 'none';
+document.getElementById('results-table-wrapper').style.display = 'none';
+
 
 // Setup to show/hide all the various controls needed for the APIs.
 // Initially this is deeply insufficient, when enough controls exist this code
