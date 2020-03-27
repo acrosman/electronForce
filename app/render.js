@@ -29,6 +29,13 @@ const refreshResponseTable = (sObjectData) => {
   headRow.setAttribute('class', 'table-primary');
   let newHeader;
   let textNode;
+  // Add the type column
+  newHeader = document.createElement('th');
+  newHeader.setAttribute('scope', 'col');
+  textNode = document.createTextNode('Type');
+  newHeader.appendChild(textNode);
+  headRow.appendChild(newHeader);
+  // Add the other columns from the result set.
   for (let i = 0; i < keys.length; i += 1) {
     newHeader = document.createElement('th');
     newHeader.setAttribute('scope', 'col');
@@ -45,6 +52,12 @@ const refreshResponseTable = (sObjectData) => {
   const tBody = document.createElement('tbody');
   for (let i = 0; i < sObjectData.records.length; i += 1) {
     dataRow = document.createElement('tr');
+    // Put the object type as a row level header.
+    newData = document.createElement('th');
+    newData.setAttribute('scope', 'row');
+    textNode = document.createTextNode(sObjectData.records[i].attributes.type);
+    newData.appendChild(textNode);
+    dataRow.appendChild(newData);
     for (let j = 0; j < keys.length; j += 1) {
       newData = document.createElement('td');
       textNode = document.createTextNode(sObjectData.records[i][keys[j]]);
