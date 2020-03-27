@@ -24,21 +24,25 @@ const refreshResponseTable = (sObjectData) => {
   const keys = Object.keys(sObjectData.records[0]).filter((value) => value !== 'attributes');
 
   // Create the header row for the table.
+  const tHead = document.createElement('thead');
   const headRow = document.createElement('tr');
-  headRow.setAttribute('class', 'results-table-header');
+  headRow.setAttribute('class', 'table-primary');
   let newHeader;
   let textNode;
   for (let i = 0; i < keys.length; i += 1) {
     newHeader = document.createElement('th');
+    newHeader.setAttribute('scope', 'col');
     textNode = document.createTextNode(keys[i]);
     newHeader.appendChild(textNode);
     headRow.appendChild(newHeader);
   }
-  resultsTable.appendChild(headRow);
+  tHead.appendChild(headRow);
+  resultsTable.appendChild(tHead);
 
   // Add the data.
   let dataRow;
   let newData;
+  const tBody = document.createElement('tbody');
   for (let i = 0; i < sObjectData.records.length; i += 1) {
     dataRow = document.createElement('tr');
     for (let j = 0; j < keys.length; j += 1) {
@@ -47,8 +51,9 @@ const refreshResponseTable = (sObjectData) => {
       newData.appendChild(textNode);
       dataRow.appendChild(newData);
     }
-    resultsTable.appendChild(dataRow);
+    tBody.appendChild(dataRow);
   }
+  resultsTable.appendChild(tBody);
 };
 
 // ===== Response handlers from IPC Messages to render context ======

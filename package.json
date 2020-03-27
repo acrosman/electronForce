@@ -33,8 +33,9 @@
   "author": "Aaron Crosman <acrosman@gmail.com> (https://spinningcode.org)",
   "license": "MIT",
   "dependencies": {
-    "electron": "^8.1.1",
     "bootstrap": "^4.4.1",
+    "bootswatch": "^4.4.1",
+    "electron": "^8.1.1",
     "electron-debug": "^2.2.0",
     "eslint-config-airbnb": "^17.1.1",
     "eslint-plugin-jsx-a11y": "^6.2.3",
