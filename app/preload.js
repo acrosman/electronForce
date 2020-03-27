@@ -19,7 +19,7 @@ contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
       // whitelist channels
-      const validChannels = ['sf_login', 'sf_logout', 'sf_query'];
+      const validChannels = ['sf_login', 'sf_logout', 'sf_query', 'sf_search'];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
       }

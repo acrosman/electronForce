@@ -80,7 +80,7 @@
                             <option value="streaming-api">Streaming API</option>
                             <option value="tooling-api">Tooling API</option>
                         </select>
-                        <p><em>Note: not all APIs currently implemented in this interface.</em></p>
+                        <p class="text-warning"><em>Note: not all APIs currently implemented in this interface.</em></p>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -90,7 +90,16 @@
                                 <label for="rest-api-soql-text">Query:</label>
                                 <textarea id="rest-api-soql-text" class="api-data-element form-control" rows="5"></textarea>
                             </div>
-                            <button type="button" id="rest-api-sosql-trigger" class="sf-api-trigger-button btn btn-success">Execute Query</button>
+                            <button type="button" id="rest-api-soql-trigger" class="sf-api-trigger-button btn btn-success">Execute Query</button>
+                        </fieldset>
+                    </div>
+                    <div id="rest-api-sosl">
+                        <fieldset>
+                            <div class="form-group">
+                                <label for="rest-api-sosl-text">Search:</label>
+                                <textarea id="rest-api-sosl-text" class="api-data-element form-control" rows="5"></textarea>
+                            </div>
+                            <button type="button" id="rest-api-sosl-trigger" class="sf-api-trigger-button btn btn-success">Execute Search</button>
                         </fieldset>
                     </div>
                 </div>

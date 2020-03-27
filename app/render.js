@@ -135,7 +135,7 @@ document.getElementById('results-table-wrapper').style.display = 'none';
 // @TODO: Do this better!
 const apiSelectors = {
   'rest-api-soql': 'query',
-  'rest-api-sosl': undefined,
+  'rest-api-sosl': 'search',
   'rest-api-crud': undefined,
   'rest-api-describe': undefined,
   'rest-api-apex': undefined,

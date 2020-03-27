@@ -160,11 +160,42 @@ ipcMain.on('sf_query', (event, args) => {
       });
       return console.error(err);
     }
-    // now the session has been expired.
+    // Send records back to the interface.
     mainWindow.webContents.send('response_query', {
       status: true,
       message: 'Query Successful',
       response: result,
+    });
+    return true;
+  });
+});
+
+/**
+ * Search Salesforce.
+ */
+ipcMain.on('sf_search', (event, args) => {
+  const conn = sfConnections[args.org];
+  conn.search(args.rest_api_sosl_text, (err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Search Failed',
+        response: err,
+      });
+      return console.error(err);
+    }
+
+    // Re-package results for easy display.
+    const adjustedResult = {
+      records: result.searchRecords,
+      totalSize: 'n/a',
+    };
+
+    // Send records back to the interface.
+    mainWindow.webContents.send('response_query', {
+      status: true,
+      message: 'Search Successful',
+      response: adjustedResult,
     });
     return true;
   });
