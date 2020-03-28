@@ -7,7 +7,9 @@ const {
   BrowserWindow,
   ipcMain,
 } = electron;
-require('electron-debug')(); // eslint-disable-line
+if (!app.isPackaged) {
+  require('electron-debug')(); // eslint-disable-line
+}
 const path = require('path');
 const url = require('url');
 
