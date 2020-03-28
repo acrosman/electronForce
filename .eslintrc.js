@@ -20,5 +20,11 @@ module.exports = {
     "rules": {
         "no-console": 0,
         "no-unused-vars": 1,
+        "import/no-extraneous-dependencies": [
+            "error", {
+                "devDependencies": false,
+                "optionalDependencies": true,
+                "peerDependencies": true,
+            }]
     }
 };
