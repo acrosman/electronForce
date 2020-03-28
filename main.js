@@ -1,4 +1,4 @@
-const electron = require('electron');
+const electron = require('electron'); // eslint-disable-line
 const jsforce = require('jsforce');
 
 // Module to control application life.
@@ -7,7 +7,7 @@ const {
   BrowserWindow,
   ipcMain,
 } = electron;
-require('electron-debug')();
+require('electron-debug')(); // eslint-disable-line
 const path = require('path');
 const url = require('url');
 
