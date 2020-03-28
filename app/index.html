@@ -10,14 +10,17 @@
     <body>
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-12 jumbotron">
-                    <h1>Welcome to ElectronForce</h1>
-                    <div class="card border-secondary col-md-3">
-                        <p>We are using:<br>
-                        Node.js <span id="node-version"></span>,<br>
-                        Chromium <span id="chrome-version"></span>,<br>
-                        and Electron <span id="electron-version"></span>.</p>
-                        <div id="org-status">
+                <div class="col-md-4">
+                    <div class="card bg-default">
+                        <h1 class="header">
+                            Electron Force
+                        </h1>
+                        <div class="card-body">
+                            <p class="card-text">
+                                This is a Salesforce API interface build using JSForce and Electron. It allows basic interactions with Salesforce remote APIs to assist development and testing.
+                            </p>
+                        </div>
+                        <div class="card-footer" id="org-status">
                             <label for="active-org">Active Org for next action.</label>
                             <select id="active-org" class="custom-select"></select>
                             <p>Message: <span id="login-response-message"></span><br>
@@ -26,81 +29,83 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-8">
+                    <div class="card bg-default">
+                        <div id="login-form card-body">
+                            <form>
+                                <fieldset>
+                                    <div class="form-group">
+                                        <label for="login-username">User Name</label>
+                                        <input type="text" id="login-username" class="form-control" aria-describedby="usernameHelp" placeholder="Enter Salesforce Username">
+                                        <small id="usernameHelp" class="form-text">Your Salesforce username must be in the form of an email address.</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="login-password">Password</label>
+                                        <input type="password" id="login-password" class="form-control" >
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="login-token">Security Token</label>
+                                        <input type="password" class="form-control" aria-describedby="tokenHelp"  id="login-token">
+                                        <small id="tokenHelp" class="form-text">Likely you will need your Saleforce Security token. If you do not have it follow <a href='https://help.salesforce.com/articleView?id=user_security_token.htm&type=5'>these reset instructions.</a></small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="login-url">Login URL</label>
+                                        <input type="url" id="login-url" class="form-control" value="https://login.salesforce.com">
+                                    </div>
+                                    <button type="button" id="login-trigger" class="btn btn-primary">Login</button>
+                                </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="row">
-                <div class="col-md-6 card">
-                    <div id="login-form card-body">
-                        <form>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div id="api-request-form" class='card-body'>
+                            <label for="select-api" >Select API</label>
+                            <select id="select-api" class="form-control">
+                                <option value="none">-- None --</option>
+                                <option value="rest-api-soql">SOQL Query (REST API)</option>
+                                <option value="rest-api-sosl">SOSL Query (REST API)</option>
+                                <option value="rest-api-crud">Object CRUD (REST API)</option>
+                                <option value="rest-api-describe">Describe (REST API)</option>
+                                <option value="rest-api-apex">Apex REST</option>
+                                <option value="analytics-api">Analytics API</option>
+                                <option value="bulk-api">Bulk API</option>
+                                <option value="chatter-api">Chatter API</option>
+                                <option value="metadata-api">Metadata API</option>
+                                <option value="streaming-api">Streaming API</option>
+                                <option value="tooling-api">Tooling API</option>
+                            </select>
+                            <p class="text-warning"><em>Note: not all APIs currently implemented in this interface.</em></p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div id="rest-api-soql" >
                             <fieldset>
                                 <div class="form-group">
-                                    <label for="login-username">User Name</label>
-                                    <input type="text" id="login-username" class="form-control" aria-describedby="usernameHelp" placeholder="Enter Salesforce Username">
-                                    <small id="usernameHelp" class="form-text">Your Salesforce username must be in the form of an email address.</small>
+                                    <label for="rest-api-soql-text">Query:</label>
+                                    <textarea id="rest-api-soql-text" class="api-data-element form-control" rows="5"></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="login-password">Password</label>
-                                    <input type="password" id="login-password" class="form-control" >
-                                </div>
-                                <div class="form-group">
-                                    <label for="login-token">Security Token</label>
-                                    <input type="password" class="form-control" aria-describedby="tokenHelp"  id="login-token">
-                                    <small id="tokenHelp" class="form-text">Likely you will need your Saleforce Security token. If you do not have it follow <a href='https://help.salesforce.com/articleView?id=user_security_token.htm&type=5'>these reset instructions.</a></small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="login-url">Login URL</label>
-                                    <input type="url" id="login-url" class="form-control" value="https://login.salesforce.com">
-                                </div>
-                                <button type="button" id="login-trigger" class="btn btn-primary">Login</button>
+                                <button type="button" id="rest-api-soql-trigger" class="sf-api-trigger-button btn btn-success">Execute Query</button>
                             </fieldset>
-                        </form>
+                        </div>
+                        <div id="rest-api-sosl">
+                            <fieldset>
+                                <div class="form-group">
+                                    <label for="rest-api-sosl-text">Search:</label>
+                                    <textarea id="rest-api-sosl-text" class="api-data-element form-control" rows="5"></textarea>
+                                </div>
+                                <button type="button" id="rest-api-sosl-trigger" class="sf-api-trigger-button btn btn-success">Execute Search</button>
+                            </fieldset>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div id=raw-response-wrapper>
-                        <h2>Response:</h2>
+                        <h2>Last Response:</h2>
                         <pre id="raw-response" class="pre-scrollable"></pre>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6 card">
-                    <div id="api-request-form" class='card-body'>
-                        <label for="select-api" >Select API</label>
-                        <select id="select-api" class="form-control">
-                            <option value="none">-- None --</option>
-                            <option value="rest-api-soql">SOQL Query (REST API)</option>
-                            <option value="rest-api-sosl">SOSL Query (REST API)</option>
-                            <option value="rest-api-crud">Object CRUD (REST API)</option>
-                            <option value="rest-api-describe">Describe (REST API)</option>
-                            <option value="rest-api-apex">Apex REST</option>
-                            <option value="analytics-api">Analytics API</option>
-                            <option value="bulk-api">Bulk API</option>
-                            <option value="chatter-api">Chatter API</option>
-                            <option value="metadata-api">Metadata API</option>
-                            <option value="streaming-api">Streaming API</option>
-                            <option value="tooling-api">Tooling API</option>
-                        </select>
-                        <p class="text-warning"><em>Note: not all APIs currently implemented in this interface.</em></p>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div id="rest-api-soql">
-                        <fieldset>
-                            <div class="form-group">
-                                <label for="rest-api-soql-text">Query:</label>
-                                <textarea id="rest-api-soql-text" class="api-data-element form-control" rows="5"></textarea>
-                            </div>
-                            <button type="button" id="rest-api-soql-trigger" class="sf-api-trigger-button btn btn-success">Execute Query</button>
-                        </fieldset>
-                    </div>
-                    <div id="rest-api-sosl">
-                        <fieldset>
-                            <div class="form-group">
-                                <label for="rest-api-sosl-text">Search:</label>
-                                <textarea id="rest-api-sosl-text" class="api-data-element form-control" rows="5"></textarea>
-                            </div>
-                            <button type="button" id="rest-api-sosl-trigger" class="sf-api-trigger-button btn btn-success">Execute Search</button>
-                        </fieldset>
                     </div>
                 </div>
             </div>
@@ -117,5 +122,7 @@
             </div>
         </div>
     </body>
-    <script type="module" src="render.js"></script>
+    <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="render.js"></script>
 </html>
