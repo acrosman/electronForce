@@ -101,6 +101,7 @@ ipcMain.on('sf_login', (event, args) => {
         status: false,
         message: 'Login Failed',
         response: err,
+        limitInfo: conn.limitInfo,
       });
       return;
     }
@@ -134,6 +135,7 @@ ipcMain.on('sf_logout', (event, args) => {
         status: false,
         message: 'Logout Failed',
         response: err,
+        limitInfo: conn.limitInfo,
       });
       console.error(err);
       return false;
@@ -143,6 +145,7 @@ ipcMain.on('sf_logout', (event, args) => {
       status: true,
       message: 'Logout Successful',
       response: {},
+      limitInfo: conn.limitInfo,
     });
     return true;
   });
@@ -159,6 +162,7 @@ ipcMain.on('sf_query', (event, args) => {
         status: false,
         message: 'Query Failed',
         response: err,
+        limitInfo: conn.limitInfo,
       });
       return console.error(err);
     }
@@ -167,6 +171,7 @@ ipcMain.on('sf_query', (event, args) => {
       status: true,
       message: 'Query Successful',
       response: result,
+      limitInfo: conn.limitInfo,
     });
     return true;
   });
@@ -183,6 +188,7 @@ ipcMain.on('sf_search', (event, args) => {
         status: false,
         message: 'Search Failed',
         response: err,
+        limitInfo: conn.limitInfo,
       });
       return console.error(err);
     }
@@ -198,6 +204,7 @@ ipcMain.on('sf_search', (event, args) => {
       status: true,
       message: 'Search Successful',
       response: adjustedResult,
+      limitInfo: conn.limitInfo,
     });
     return true;
   });
