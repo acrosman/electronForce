@@ -14,7 +14,7 @@ $(document).ready(() => {
     'rest-api-soql': 'query',
     'rest-api-sosl': 'search',
     'rest-api-crud': undefined,
-    'rest-api-describe': undefined,
+    'rest-api-describe': 'describe',
     'rest-api-apex': undefined,
     'analytics-api': undefined,
     'bulk-api': undefined,
@@ -193,4 +193,10 @@ document.getElementById('logout-trigger').addEventListener('click', () => {
   document.getElementById('org-status').style.display = 'none';
   // @TODO: Remove org from list of active orgs.
   // @TODO: Update/hide status area if no orgs remain.
+});
+
+// Describe
+window.api.receive('response_describe', (data) => {
+  console.log('Received Describe response from main process');
+  displayRawResponse(data);
 });

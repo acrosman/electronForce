@@ -209,3 +209,30 @@ ipcMain.on('sf_search', (event, args) => {
     return true;
   });
 });
+
+/**
+ * Describe Object Type.
+ */
+ipcMain.on('sf_describe', (event, args) => {
+  const conn = sfConnections[args.org];
+  conn.sobject(args.rest_api_describe_text).describe((err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Describe Failed',
+        response: err,
+        limitInfo: conn.limitInfo,
+      });
+      return console.error(err);
+    }
+
+    // Send records back to the interface.
+    mainWindow.webContents.send('response_describe', {
+      status: true,
+      message: `Describe ${args.rest_api_describe_text} Successful`,
+      response: result,
+      limitInfo: conn.limitInfo,
+    });
+    return true;
+  });
+});
