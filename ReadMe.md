@@ -1,6 +1,6 @@
 # ElectronForce
 
-This is a basic proof-of-concept level wrapper of Electron around JSForce. The intention is to do more interesting things in the future, but first having a simple cross-platform application to run Salesforce API calls in an interface seems useful.
+ElectronForce is a simple cross platform graphic interface for the Salesforce APIs using the [JSForce](https://jsforce.github.io/) library.
 
 ## Larger Vision
 
@@ -15,3 +15,7 @@ It will need to:
 3. Flag relavent differences between orgs.
 4. Generate sample data for both Salesforce import and CSV export.
 5. Generate human readable specs and documentation for the relavent objects and fields.
+
+## Disclaimer
+
+This project has no direct association with Salesforce except the use of the APIs provided under the terms of use of their services.
