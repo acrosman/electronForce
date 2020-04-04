@@ -133,6 +133,13 @@ const refreshResponseTable = (sObjectData) => {
   resultsTable.appendChild(tBody);
 };
 
+const refreshObjectDisplay = (data) => {
+  $('#results-object-viewer-wrapper .results-summary h3').text(data.message);
+  $('#results-object-viewer-wrapper .results-summary p').text(`Found ${data.response.fields.length} fields and ${data.response.recordTypeInfos.length} record types.`);
+
+  $('#results-object-viewer').jsonViewer(data.response, { collapsed: true, withQuotes: true, withLinks: true });
+};
+
 // ===== Response handlers from IPC Messages to render context ======
 // Login response.
 window.api.receive('response_login', (data) => {
@@ -178,12 +185,15 @@ window.api.receive('response_query', (data) => {
   }
 });
 
-// Describe
+// Describe Response Handler: setup jsTree.
 window.api.receive('response_describe', (data) => {
   console.log('Received Describe response from main process');
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
   displayRawResponse(data);
+  if (data.status) {
+    refreshObjectDisplay(data);
+  }
 });
 
 // ========= Messages to the main process ===============

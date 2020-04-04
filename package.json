@@ -40,8 +40,8 @@
     "bootstrap": "^4.4.1",
     "bootswatch": "^4.4.1",
     "jquery": "^3.4.1",
+    "jquery.json-viewer": "^1.4.0",
     "jsforce": "^1.9.3",
-    "jstree": "^3.3.9",
     "minimist": "^1.2.5",
     "popper.js": "^1.16.1"
   },
