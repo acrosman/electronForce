@@ -5,6 +5,7 @@ $(document).ready(() => {
   $('#org-status').hide();
   $('#api-request-form').hide();
   $('#results-table-wrapper').hide();
+  $('#results-object-viewer-wrapper').hide();
 
   // Setup to show/hide all the various controls needed for the APIs.
   // Initially this is deeply insufficient, when enough controls exist this code
@@ -72,6 +73,7 @@ const displayRawResponse = (responseObject) => {
 
 const refreshResponseTable = (sObjectData) => {
   document.getElementById('results-table-wrapper').style.display = 'block';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'none';
   document.getElementById('results-summary-count').innerText = `Fetched ${sObjectData.records.length} of ${sObjectData.totalSize} records`;
 
   // Get the table.
@@ -176,6 +178,14 @@ window.api.receive('response_query', (data) => {
   }
 });
 
+// Describe
+window.api.receive('response_describe', (data) => {
+  console.log('Received Describe response from main process');
+  document.getElementById('results-table-wrapper').style.display = 'none';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'block';
+  displayRawResponse(data);
+});
+
 // ========= Messages to the main process ===============
 // Login
 document.getElementById('login-trigger').addEventListener('click', () => {
@@ -193,10 +203,4 @@ document.getElementById('logout-trigger').addEventListener('click', () => {
   document.getElementById('org-status').style.display = 'none';
   // @TODO: Remove org from list of active orgs.
   // @TODO: Update/hide status area if no orgs remain.
-});
-
-// Describe
-window.api.receive('response_describe', (data) => {
-  console.log('Received Describe response from main process');
-  displayRawResponse(data);
 });
