@@ -10,6 +10,7 @@ From your terminal:
 
     git clone https://github.com/acrosman/electronForce.git
     cd electronForce
+    npm install
     npm start
 
 ElectronForce will allow you to log into your Salesforce Org and interact with some of the APIs. While all of JSForce's supported APIs are listed, only Query, Search, and Describe are currently support.
