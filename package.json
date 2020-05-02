@@ -39,7 +39,7 @@
   "dependencies": {
     "bootstrap": "^4.4.1",
     "bootswatch": "^4.4.1",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery.json-viewer": "^1.4.0",
     "jsforce": "^1.9.3",
     "minimist": "^1.2.5",
