@@ -8,16 +8,20 @@ contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
       // whitelist channels
-      const validChannels = ['eforce_send_log', 'sf_login', 'sf_logout', 'sf_query', 'sf_search', 'sf_describe'];
+      const validChannels = [];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
+      } else {
+        console.error('Invalid message sent by console');
       }
     },
     receive: (channel, func) => {
-      const validChannels = ['response_login', 'response_logout', 'response_query', 'response_describe', 'response_generic'];
+      const validChannels = ['log_message'];
       if (validChannels.includes(channel)) {
         // Remove the event to avoid information leaks.
         ipcRenderer.on(channel, (event, ...args) => func(...args));
+      } else {
+        console.error('Invalid message sent to console');
       }
     },
   },

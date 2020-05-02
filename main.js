@@ -24,12 +24,14 @@ app.allowRendererProcessReuse = true;
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let consoleWindow;
 
 // A global collection of the various SF Org connections currently open in the
 // app.
 // @TODOL: find a better way to do this that isn't a global.
 const sfConnections = {};
 
+// Create the main application window.
 function createWindow() {
   const display = electron.screen.getPrimaryDisplay();
   // Create the browser window.
@@ -51,9 +53,6 @@ function createWindow() {
     slashes: true,
   }));
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
-
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
@@ -63,10 +62,41 @@ function createWindow() {
   });
 }
 
+// Create the logging console window.
+// @TODO: Generalize this and merge with previous function.
+function createLoggingConsole() {
+  const display = electron.screen.getPrimaryDisplay();
+  // Create the browser window.
+  consoleWindow = new BrowserWindow({
+    width: Math.min(1200, display.workArea.width),
+    height: display.workArea.height / 2,
+    frame: true,
+    webPreferences: {
+      nodeIntegration: false, // Disable nodeIntegration for security.
+      contextIsolation: true, // Enabling contextIsolation for security.
+      preload: path.join(app.getAppPath(), 'app/consolePreload.js'),
+    },
+  });
+  consoleWindow.loadURL(url.format({
+    pathname: path.join(app.getAppPath(), 'app/console.html'),
+    protocol: 'file:',
+    slashes: true,
+  }));
+
+  // Emitted when the window is closed.
+  consoleWindow.on('closed', () => {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    consoleWindow = null;
+  });
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
+app.on('ready', createLoggingConsole);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -82,6 +112,7 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
     createWindow();
+    createLoggingConsole();
   }
 });
 
@@ -108,15 +139,20 @@ ipcMain.on('sf_login', (event, args) => {
         response: err,
         limitInfo: conn.limitInfo,
       });
-      return;
+      return true;
     }
     // Now you can get the access token and instance URL information.
     // Save them to establish connection next time.
-    console.log(conn.accessToken);
-    console.log(conn.instanceUrl);
-    // logged in user property
-    console.log(`User ID: ${userInfo.id}`);
-    console.log(`Org ID: ${userInfo.organizationId}`);
+    consoleWindow.webContents.send('log_message', {
+      sender: event.sender.getTitle(),
+      channel: 'Info',
+      message: `New Connection to ${conn.instanceUrl} with Access Token ${conn.accessToken}`,
+    });
+    consoleWindow.webContents.send('log_message', {
+      sender: event.sender.getTitle(),
+      channel: 'Info',
+      message: `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
+    });
 
     // Save the next connection in the global storage.
     sfConnections[userInfo.organizationId] = conn;
@@ -126,6 +162,7 @@ ipcMain.on('sf_login', (event, args) => {
       message: 'Login Successful',
       response: userInfo,
     });
+    return true;
   });
 });
 
@@ -142,8 +179,12 @@ ipcMain.on('sf_logout', (event, args) => {
         response: err,
         limitInfo: conn.limitInfo,
       });
-      console.error(err);
-      return false;
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Logout Failed ${err}`,
+      });
+      return true;
     }
     // now the session has been expired.
     mainWindow.webContents.send('response_logout', {
@@ -169,7 +210,12 @@ ipcMain.on('sf_query', (event, args) => {
         response: err,
         limitInfo: conn.limitInfo,
       });
-      return console.error(err);
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Query Failed ${err}`,
+      });
+      return true;
     }
     // Send records back to the interface.
     mainWindow.webContents.send('response_query', {
@@ -195,7 +241,12 @@ ipcMain.on('sf_search', (event, args) => {
         response: err,
         limitInfo: conn.limitInfo,
       });
-      return console.error(err);
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Search Failed ${err}`,
+      });
+      return true;
     }
 
     // Re-package results for easy display.
@@ -228,7 +279,13 @@ ipcMain.on('sf_describe', (event, args) => {
         response: err,
         limitInfo: conn.limitInfo,
       });
-      return console.error(err);
+
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Describe Failed ${err}`,
+      });
+      return true;
     }
 
     // Send records back to the interface.
@@ -240,4 +297,14 @@ ipcMain.on('sf_describe', (event, args) => {
     });
     return true;
   });
+});
+
+// Get a logging message from a renderer.
+ipcMain.on('eforce_send_log', (event, args) => {
+  consoleWindow.webContents.send('log_message', {
+    sender: event.sender.getTitle(),
+    channel: args.channel,
+    message: args.message,
+  });
+  return true;
 });
