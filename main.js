@@ -7,9 +7,14 @@ const {
   BrowserWindow,
   ipcMain,
 } = electron;
+
+// Developer Dependencies.
 if (!app.isPackaged) {
   require('electron-debug')(); // eslint-disable-line
+  require('electron-reloader')(module); // eslint-disable-line
 }
+
+// Additional Tooling.
 const path = require('path');
 const url = require('url');
 
