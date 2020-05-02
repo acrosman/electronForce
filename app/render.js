@@ -143,7 +143,6 @@ const refreshObjectDisplay = (data) => {
 // ===== Response handlers from IPC Messages to render context ======
 // Login response.
 window.api.receive('response_login', (data) => {
-  console.log('Received Login response from main process');
   if (data.status) {
     // Add the new connection to the list of options.
     const opt = document.createElement('option');
@@ -163,20 +162,17 @@ window.api.receive('response_login', (data) => {
 
 // Logout Response.
 window.api.receive('response_logout', (data) => {
-  console.log('Received Logout response from main process');
   displayRawResponse(data);
   // TODO: Remove connection information.
 });
 
 // Generic Response.
 window.api.receive('response_generic', (data) => {
-  console.log('Received Generic response from main process');
   displayRawResponse(data);
 });
 
 // Query Response. Print the query results in table.
 window.api.receive('response_query', (data) => {
-  console.log('Received Query response from main process');
   if (data.status) {
     displayRawResponse(data);
     refreshResponseTable(data.response);
@@ -187,7 +183,6 @@ window.api.receive('response_query', (data) => {
 
 // Describe Response Handler: setup jsTree.
 window.api.receive('response_describe', (data) => {
-  console.log('Received Describe response from main process');
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
   displayRawResponse(data);

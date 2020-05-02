@@ -132,7 +132,12 @@ ipcMain.on('sf_login', (event, args) => {
 
   conn.login(args.username, password, (err, userInfo) => {
     if (err) {
-      console.error(err);
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Login Failed ${err}`,
+      });
+
       mainWindow.webContents.send('sfShowOrgId', {
         status: false,
         message: 'Login Failed',

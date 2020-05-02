@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 function displayMessage(sender, channel, message) {
   console.log(`From ${sender}, on ${channel} got ${message}`);
 
@@ -23,6 +24,5 @@ function displayMessage(sender, channel, message) {
 
 // Handle API message
 window.api.receive('log_message', (data) => {
-  console.log('Received log request from main process');
   displayMessage(data.sender, data.channel, data.message);
 });
