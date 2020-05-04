@@ -304,6 +304,72 @@ ipcMain.on('sf_describe', (event, args) => {
   });
 });
 
+/**
+ * Get the Org Object.
+ */
+ipcMain.on('sf_orgExplore', (event, args) => {
+  const conn = sfConnections[args.org];
+
+  // Get the org object's list of fields.
+  conn.sobject('Organization').describe((err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Describe Org in fetch process failed',
+        response: err,
+        limitInfo: conn.limitInfo,
+      });
+
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Describe Org in fetch process failed ${err}`,
+      });
+      return true;
+    }
+
+    // Iterate over the list of fields and write a useful query.
+    let fields = '';
+    for (let i = 0; i < result.fields.length; i += 1){
+      if (i === 0) {
+        fields = result.fields[i].name;
+      } else {
+        fields = `${fields}, ${result.fields[i].name}`;
+      }
+    }
+
+    const orgQuery = `SELECT ${fields} FROM Organization`;
+
+    conn.query(orgQuery, (err, result) => {
+      if (err) {
+        mainWindow.webContents.send('response_generic', {
+          status: false,
+          message: 'Org Fetch Failed',
+          response: err,
+          limitInfo: conn.limitInfo,
+        });
+
+        consoleWindow.webContents.send('log_message', {
+          sender: event.sender.getTitle(),
+          channel: 'Error',
+          message: `Org Fetch Failed ${err}`,
+        });
+        return true;
+      }
+
+      // Send records back to the interface.
+      mainWindow.webContents.send('response_org_object_display', {
+        status: true,
+        message: 'Fetched Org Details',
+        response: result.records[0],
+        limitInfo: conn.limitInfo,
+      });
+      return true;
+    });
+  });
+});
+
+
 // Get a logging message from a renderer.
 ipcMain.on('eforce_send_log', (event, args) => {
   consoleWindow.webContents.send('log_message', {

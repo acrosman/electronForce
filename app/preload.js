@@ -8,13 +8,13 @@ contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
       // whitelist channels
-      const validChannels = ['eforce_send_log', 'sf_login', 'sf_logout', 'sf_query', 'sf_search', 'sf_describe'];
+      const validChannels = ['eforce_send_log', 'sf_login', 'sf_logout', 'sf_query', 'sf_search', 'sf_describe', 'sf_orgExplore'];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
       }
     },
     receive: (channel, func) => {
-      const validChannels = ['response_login', 'response_logout', 'response_query', 'response_describe', 'response_generic'];
+      const validChannels = ['response_login', 'response_logout', 'response_query', 'response_describe', 'response_org_object_display', 'response_generic'];
       if (validChannels.includes(channel)) {
         // Remove the event to avoid information leaks.
         ipcRenderer.on(channel, (event, ...args) => func(...args));

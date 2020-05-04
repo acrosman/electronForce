@@ -23,6 +23,7 @@ $(document).ready(() => {
     'metadata-api': undefined,
     'streaming-api': undefined,
     'tooling-api': undefined,
+    'org-explorer': 'orgExplore',
   };
 
   let element;
@@ -135,7 +136,13 @@ const refreshResponseTable = (sObjectData) => {
 
 const refreshObjectDisplay = (data) => {
   $('#results-object-viewer-wrapper .results-summary h3').text(data.message);
-  $('#results-object-viewer-wrapper .results-summary p').text(`Found ${data.response.fields.length} fields and ${data.response.recordTypeInfos.length} record types.`);
+
+  // When this is displaying a describe add a little helpful sumamry.
+  if(data.hasOwnProperty('response.fields')) {
+    $('#results-object-viewer-wrapper .results-summary p').text(`Found ${data.response.fields.length} fields and ${data.response.recordTypeInfos.length} record types.`);
+  } else {
+    $('#results-object-viewer-wrapper .results-summary p').text('');
+  }
 
   $('#results-object-viewer').jsonViewer(data.response, { collapsed: true, withQuotes: true, withLinks: true });
 };
@@ -190,6 +197,17 @@ window.api.receive('response_describe', (data) => {
     refreshObjectDisplay(data);
   }
 });
+
+// Org Details Response Handler: setup jsTree.
+window.api.receive('response_org_object_display', (data) => {
+  document.getElementById('results-table-wrapper').style.display = 'none';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'block';
+  displayRawResponse(data);
+  if (data.status) {
+    refreshObjectDisplay(data);
+  }
+});
+
 
 // ========= Messages to the main process ===============
 // Login
