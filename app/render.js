@@ -138,7 +138,7 @@ const refreshObjectDisplay = (data) => {
   $('#results-object-viewer-wrapper .results-summary h3').text(data.message);
 
   // When this is displaying a describe add a little helpful sumamry.
-  if(data.hasOwnProperty('response.fields')) {
+  if (Object.prototype.hasOwnProperty.call(data, 'response.fields')) {
     $('#results-object-viewer-wrapper .results-summary p').text(`Found ${data.response.fields.length} fields and ${data.response.recordTypeInfos.length} record types.`);
   } else {
     $('#results-object-viewer-wrapper .results-summary p').text('');
