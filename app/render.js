@@ -144,7 +144,12 @@ const refreshObjectDisplay = (data) => {
     $('#results-object-viewer-wrapper .results-summary p').text('');
   }
 
-  $('#results-object-viewer').jsonViewer(data.response, { collapsed: true, withQuotes: true, withLinks: true });
+  $('#results-object-viewer').jsonViewer(data.response, {
+    collapsed: true,
+    rootCollapsable: false,
+    withQuotes: true,
+    withLinks: true,
+  });
 };
 
 // ===== Response handlers from IPC Messages to render context ======
