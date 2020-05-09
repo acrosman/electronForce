@@ -330,7 +330,7 @@ ipcMain.on('sf_orgExplore', (event, args) => {
 
     // Iterate over the list of fields and write a useful query.
     let fields = '';
-    for (let i = 0; i < result.fields.length; i += 1){
+    for (let i = 0; i < result.fields.length; i += 1) {
       if (i === 0) {
         fields = result.fields[i].name;
       } else {
@@ -340,19 +340,19 @@ ipcMain.on('sf_orgExplore', (event, args) => {
 
     const orgQuery = `SELECT ${fields} FROM Organization`;
 
-    conn.query(orgQuery, (err, result) => {
-      if (err) {
+    conn.query(orgQuery, (qErr, qResult) => {
+      if (qErr) {
         mainWindow.webContents.send('response_generic', {
           status: false,
           message: 'Org Fetch Failed',
-          response: err,
+          response: qErr,
           limitInfo: conn.limitInfo,
         });
 
         consoleWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
-          message: `Org Fetch Failed ${err}`,
+          message: `Org Fetch Failed ${qErr}`,
         });
         return true;
       }
@@ -361,11 +361,12 @@ ipcMain.on('sf_orgExplore', (event, args) => {
       mainWindow.webContents.send('response_org_object_display', {
         status: true,
         message: 'Fetched Org Details',
-        response: result.records[0],
+        response: qResult.records[0],
         limitInfo: conn.limitInfo,
       });
       return true;
     });
+    return true;
   });
 });
 
