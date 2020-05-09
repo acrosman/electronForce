@@ -1,6 +1,6 @@
 # ElectronForce
 
-ElectronForce is a simple cross platform graphic interface for the Salesforce APIs using the [JSForce](https://jsforce.github.io/) library.
+ElectronForce is an Electron based Salesforce Org exploration tool using the [JSForce](https://jsforce.github.io/) library to leverage the Salesforce APIs. Currently it allows you to query and search data, describe objects, review the Organization object, and list all objects in the org.
 
 ## Quick Start
 
@@ -44,19 +44,13 @@ Beyond exploring the data and testing queries, ElectronForce can also allow you 
 
 ![ElectronForce Describe Result Screen.](https://raw.githubusercontent.com/acrosman/electronForce/master/documentation/images/ElectronForceDescribe.png "A simple tree display of the describe response.").
 
-## Larger Vision
+### Run Global Describe
 
-Create a tool that not only can explore and interact with the Salesforce APIs, but also documents, tracks, and reports on elements of a build that are critical for integrations with 3rd party solutions. And while we're at it, Data Loader needs a replacement.
+Global Describe retreives a list of all object (custom and standard) in your org.
 
-It will need to:
-1. Connect to one or more orgs.
-2. Export object field metadata and at the field level:
-    * Support markup of field used in integrations.
-    * Allow definitions of sample data for each field.
-    * Save annotations for later use.
-3. Flag relavent differences between orgs.
-4. Generate sample data for both Salesforce import and CSV export.
-5. Generate human readable specs and documentation for the relavent objects and fields.
+### Fetch the Organization Object
+
+All Salesforce Orgs have a single object that describes the org itself. This function gets a list of all the fields on your org's Organization object (so it adds new fields as they are released) and runs a SOQL query to retreive all available data. _Note: Not all fields return data via the API._
 
 ## Disclaimer
 
