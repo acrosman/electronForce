@@ -11,12 +11,6 @@ module.exports = {
     "parserOptions": {
         "ecmaVersion": 2018
     },
-    "ignorePatterns": [
-        "temp.js",
-        "node_modules/",
-        ".vscode/",
-        ".sfdx/",
-    ],
     "rules": {
         "no-unused-vars": 1,
     }
