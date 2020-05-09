@@ -11,7 +11,7 @@ const {
 // Developer Dependencies.
 if (!app.isPackaged) {
   require('electron-debug')(); // eslint-disable-line
-  require('electron-reloader')(module); // eslint-disable-line
+  // require('electron-reloader')(module); // eslint-disable-line
 }
 
 // Additional Tooling.
@@ -340,6 +340,7 @@ ipcMain.on('sf_orgExplore', (event, args) => {
 
     const orgQuery = `SELECT ${fields} FROM Organization`;
 
+    // Retreive all fields for this org's Organization object.
     conn.query(orgQuery, (qErr, qResult) => {
       if (qErr) {
         mainWindow.webContents.send('response_generic', {
