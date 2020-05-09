@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld(
         'sf_search',
         'sf_describe',
         'sf_orgExplore',
+        'sf_describeGlobal',
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
@@ -27,6 +28,7 @@ contextBridge.exposeInMainWorld(
         'response_logout',
         'response_query',
         'response_describe',
+        'response_describe_global',
         'response_org_object_display',
         'response_generic',
       ];

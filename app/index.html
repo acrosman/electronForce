@@ -67,17 +67,10 @@
                             <label for="select-api" >Select API</label>
                             <select id="select-api" class="form-control">
                                 <option value="none">-- None --</option>
-                                <option value="rest-api-soql">SOQL Query (REST API)</option>
-                                <option value="rest-api-sosl">SOSL Query (REST API)</option>
-                                <!-- <option value="rest-api-crud">Object CRUD (REST API)</option> -->
-                                <option value="rest-api-describe">Describe (REST API)</option>
-                                <!-- <option value="rest-api-apex">Apex REST</option>
-                                <option value="analytics-api">Analytics API</option>
-                                <option value="bulk-api">Bulk API</option>
-                                <option value="chatter-api">Chatter API</option>
-                                <option value="metadata-api">Metadata API</option>
-                                <option value="streaming-api">Streaming API</option>
-                                <option value="tooling-api">Tooling API</option> -->
+                                <option value="rest-api-soql">SOQL Query</option>
+                                <option value="rest-api-sosl">SOSL Query</option>
+                                <option value="rest-api-describe">Describe Object</option>
+                                <option value="org-describe-global">Describe Global</option>
                                 <option value="org-explorer">Org Object Explorer</option>
                             </select>
                         </div>
@@ -108,6 +101,11 @@
                                     <input type="text" id="rest-api-describe-text" class="api-data-element form-control" placeholder="e.g. Account">
                                 </div>
                                 <button type="button" id="rest-api-describe-trigger" class="sf-api-trigger-button btn btn-success">Describe Object</button>
+                            </fieldset>
+                        </div>
+                        <div id="org-describe-global">
+                            <fieldset>
+                                <button type="button" id="org-describe-global-trigger" class="sf-api-trigger-button btn btn-success">Global Describe</button>
                             </fieldset>
                         </div>
                         <div id="org-explorer">

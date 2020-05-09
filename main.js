@@ -305,6 +305,40 @@ ipcMain.on('sf_describe', (event, args) => {
 });
 
 /**
+ * Global Describe Call.
+ */
+ipcMain.on('sf_describeGlobal', (event, args) => {
+  const conn = sfConnections[args.org];
+  conn.describeGlobal((err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Describe Global Failed',
+        response: err,
+        limitInfo: conn.limitInfo,
+      });
+
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Describe Global Failed ${err}`,
+      });
+      return true;
+    }
+
+    // Send records back to the interface.
+    mainWindow.webContents.send('response_describe_global', {
+      status: true,
+      message: 'Describe Global Successful',
+      response: result,
+      limitInfo: conn.limitInfo,
+    });
+    return true;
+  });
+});
+
+
+/**
  * Get the Org Object.
  */
 ipcMain.on('sf_orgExplore', (event, args) => {

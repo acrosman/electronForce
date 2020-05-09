@@ -14,16 +14,9 @@ $(document).ready(() => {
   const apiSelectors = {
     'rest-api-soql': 'query',
     'rest-api-sosl': 'search',
-    'rest-api-crud': undefined,
     'rest-api-describe': 'describe',
-    'rest-api-apex': undefined,
-    'analytics-api': undefined,
-    'bulk-api': undefined,
-    'chatter-api': undefined,
-    'metadata-api': undefined,
-    'streaming-api': undefined,
-    'tooling-api': undefined,
     'org-explorer': 'orgExplore',
+    'org-describe-global': 'describeGlobal',
   };
 
   let element;
@@ -193,8 +186,19 @@ window.api.receive('response_query', (data) => {
   }
 });
 
+// @TODO: Refactor to merge the next three functions.
 // Describe Response Handler: setup jsTree.
 window.api.receive('response_describe', (data) => {
+  document.getElementById('results-table-wrapper').style.display = 'none';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'block';
+  displayRawResponse(data);
+  if (data.status) {
+    refreshObjectDisplay(data);
+  }
+});
+
+// Global Describe Response Handler: setup jsTree.
+window.api.receive('response_describe_global', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
   displayRawResponse(data);
@@ -212,7 +216,6 @@ window.api.receive('response_org_object_display', (data) => {
     refreshObjectDisplay(data);
   }
 });
-
 
 // ========= Messages to the main process ===============
 // Login
