@@ -9,9 +9,9 @@ const {
 } = electron;
 
 // Developer Dependencies.
-if (!app.isPackaged) {
+const isDev = !app.isPackaged;
+if (isDev) {
   require('electron-debug')(); // eslint-disable-line
-  // require('electron-reloader')(module); // eslint-disable-line
 }
 
 // Additional Tooling.
@@ -40,8 +40,12 @@ function createWindow() {
     height: display.workArea.height,
     frame: true,
     webPreferences: {
+      devTools: isDev,
       nodeIntegration: false, // Disable nodeIntegration for security.
-      contextIsolation: true, // Enabling contextIsolation for security.
+      nodeIntegrationInWorker: false,
+      nodeIntegrationInSubFrames: false,
+      contextIsolation: true, // Enabling contextIsolation to protect against prototype pollution.
+      enableRemoteModule: false, // Turn off remote to avoid temptation.
       preload: path.join(app.getAppPath(), 'app/preload.js'),
     },
   });
@@ -106,6 +110,36 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+// Extra security filters.
+// See also: https://github.com/reZach/secure-electron-template
+app.on('web-contents-created', (event, contents) => {
+  // Block navigation.
+  // https://electronjs.org/docs/tutorial/security#12-disable-or-limit-navigation
+  contents.on('will-navigate', (navevent) => {
+    navevent.preventDefault();
+  });
+  contents.on('will-redirect', (navevent) => {
+    navevent.preventDefault();
+  });
+
+  // https://electronjs.org/docs/tutorial/security#11-verify-webview-options-before-creation
+  contents.on('will-attach-webview', (webevent, webPreferences) => {
+    // Strip away preload scripts if unused or verify their location is legitimate
+    delete webPreferences.preload;
+    delete webPreferences.preloadURL;
+
+    // Disable Node.js integration
+    webPreferences.nodeIntegration = false;
+  });
+
+  // Block new windows from within the App
+  // https://electronjs.org/docs/tutorial/security#13-disable-or-limit-creation-of-new-windows
+  contents.on('new-window', async (newevent) => {
+    newevent.preventDefault();
+  });
+});
+
 
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
