@@ -84,6 +84,13 @@ const object2ul = (data) => {
   return ul;
 };
 
+const generateTableHeader = (headerRow, labelText) => {
+  const newHeader = document.createElement('th');
+  newHeader.setAttribute('scope', 'col');
+  const textNode = document.createTextNode(labelText);
+  newHeader.appendChild(textNode);
+  headerRow.appendChild(newHeader);
+};
 
 const displayRawResponse = (responseObject) => {
   replaceText('raw-response', JSON.stringify(responseObject, undefined, 2));
@@ -109,21 +116,14 @@ const refreshResponseTable = (sObjectData) => {
   const tHead = document.createElement('thead');
   const headRow = document.createElement('tr');
   headRow.setAttribute('class', 'table-primary');
-  let newHeader;
   let textNode;
-  // Add the type column
-  newHeader = document.createElement('th');
-  newHeader.setAttribute('scope', 'col');
-  textNode = document.createTextNode('Type');
-  newHeader.appendChild(textNode);
-  headRow.appendChild(newHeader);
+
+  // Add the type column.
+  generateTableHeader(headRow, 'Type');
+
   // Add the other columns from the result set.
   for (let i = 0; i < keys.length; i += 1) {
-    newHeader = document.createElement('th');
-    newHeader.setAttribute('scope', 'col');
-    textNode = document.createTextNode(keys[i]);
-    newHeader.appendChild(textNode);
-    headRow.appendChild(newHeader);
+    generateTableHeader(headRow, keys[i]);
   }
   tHead.appendChild(headRow);
   resultsTable.appendChild(tHead);
@@ -170,7 +170,18 @@ const refreshObjectDisplay = (data) => {
 };
 
 const displayGlobalDescribe = (sObjectData) => {
-  // Setup.
+  // Define prioirty columns to display at left.
+  const prioirtyColumns = [
+    'label',
+    'name',
+    'labelPlural',
+  ];
+
+  // Define list of columns known to have a list of information for the right edge.
+  const listColumns = ['urls'];
+
+
+  // Display area.
   document.getElementById('results-table-wrapper').style.display = 'block';
   document.getElementById('results-object-viewer-wrapper').style.display = 'none';
   document.getElementById('results-summary-count').innerText = `Your orgs contains ${sObjectData.length} objects (custom and standard)`;
@@ -190,16 +201,25 @@ const displayGlobalDescribe = (sObjectData) => {
   const tHead = document.createElement('thead');
   const headRow = document.createElement('tr');
   headRow.setAttribute('class', 'table-primary');
-  let newHeader;
   let contentNode;
+
+  // Add Priority Columns to the header
+  for (let i = 0; i < prioirtyColumns.length; i += 1) {
+    generateTableHeader(headRow, prioirtyColumns[i]);
+  }
+
   // Add the other columns from the result set.
   for (let i = 0; i < keys.length; i += 1) {
-    newHeader = document.createElement('th');
-    newHeader.setAttribute('scope', 'col');
-    contentNode = document.createTextNode(keys[i]);
-    newHeader.appendChild(contentNode);
-    headRow.appendChild(newHeader);
+    if (!prioirtyColumns.includes(keys[i]) && !listColumns.includes(keys[i])) {
+      generateTableHeader(headRow, keys[i]);
+    }
   }
+
+  // Add the trailing list columns.
+  for (let i = 0; i < listColumns.length; i += 1) {
+    generateTableHeader(headRow, listColumns[i]);
+  }
+
   tHead.appendChild(headRow);
   resultsTable.appendChild(tHead);
 
@@ -209,19 +229,38 @@ const displayGlobalDescribe = (sObjectData) => {
   const tBody = document.createElement('tbody');
   for (let i = 0; i < sObjectData.length; i += 1) {
     dataRow = document.createElement('tr');
-    for (let j = 0; j < keys.length; j += 1) {
-      // Special Case handling for urls field
-      if (keys[j] === 'urls') {
-        contentNode = object2ul(sObjectData[i][keys[j]]);
-      } else {
-        contentNode = document.createTextNode(sObjectData[i][keys[j]]);
-      }
+
+    // Start with the priority columns.
+    for (let j = 0; j < prioirtyColumns.length; j += 1) {
+      contentNode = document.createTextNode(sObjectData[i][prioirtyColumns[j]]);
 
       // Add the new content to the row
       newData = document.createElement('td');
       newData.appendChild(contentNode);
       dataRow.appendChild(newData);
     }
+
+    // Add all non-special cased columns.
+    for (let j = 0; j < keys.length; j += 1) {
+      if (!prioirtyColumns.includes(keys[j]) && !listColumns.includes(keys[j])) {
+        contentNode = document.createTextNode(sObjectData[i][keys[j]]);
+        // Add the new content to the row
+        newData = document.createElement('td');
+        newData.appendChild(contentNode);
+        dataRow.appendChild(newData);
+      }
+    }
+
+    // Add the list columns at the end
+    for (let j = 0; j < listColumns.length; j += 1) {
+      contentNode = object2ul(sObjectData[i][listColumns[j]]);
+
+      // Add the new content to the row
+      newData = document.createElement('td');
+      newData.appendChild(contentNode);
+      dataRow.appendChild(newData);
+    }
+
     tBody.appendChild(dataRow);
   }
   resultsTable.appendChild(tBody);
