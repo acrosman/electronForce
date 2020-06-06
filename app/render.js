@@ -93,7 +93,12 @@ const generateTableHeader = (headerRow, labelText) => {
 };
 
 const displayRawResponse = (responseObject) => {
-  replaceText('raw-response', JSON.stringify(responseObject, undefined, 2));
+  $('#raw-response').jsonViewer(responseObject, {
+    collapsed: true,
+    rootCollapsable: false,
+    withQuotes: true,
+    withLinks: true,
+  });
 };
 
 const refreshResponseTable = (sObjectData) => {
