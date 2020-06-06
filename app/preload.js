@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld(
         'sf_describe',
         'sf_orgExplore',
         'sf_describeGlobal',
+        'sf_orgLimits',
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
@@ -30,6 +31,7 @@ contextBridge.exposeInMainWorld(
         'response_describe',
         'response_describe_global',
         'response_org_object_display',
+        'reponnse_org_limits',
         'response_generic',
       ];
       if (validChannels.includes(channel)) {

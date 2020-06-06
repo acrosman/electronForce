@@ -449,3 +449,34 @@ ipcMain.on('eforce_send_log', (event, args) => {
   });
   return true;
 });
+
+// Fetch org limits
+ipcMain.on('sf_orgLimits', (event, args) => {
+  const conn = sfConnections[args.org];
+  conn.limits((err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Limits Check Failed',
+        response: err,
+        limitInfo: conn.limitInfo,
+      });
+
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Limit Check Error: ${err}`,
+      });
+      return true;
+    }
+
+    // Send records back to the interface.
+    mainWindow.webContents.send('reponnse_org_limits', {
+      status: true,
+      message: 'Org Limit Check Successful',
+      response: result,
+      limitInfo: conn.limitInfo,
+    });
+    return true;
+  });
+});

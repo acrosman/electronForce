@@ -17,6 +17,7 @@ $(document).ready(() => {
     'rest-api-describe': 'describe',
     'org-explorer': 'orgExplore',
     'org-describe-global': 'describeGlobal',
+    'org-limits': 'orgLimits',
   };
 
   let element;
@@ -323,7 +324,7 @@ window.api.receive('response_describe', (data) => {
   }
 });
 
-// Global Describe Response Handler: setup jsTree.
+// Global Describe Response Handler: use jsTree.
 window.api.receive('response_describe_global', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
@@ -333,7 +334,7 @@ window.api.receive('response_describe_global', (data) => {
   }
 });
 
-// Org Details Response Handler: setup jsTree.
+// Org Details Response Handler.
 window.api.receive('response_org_object_display', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
@@ -341,6 +342,16 @@ window.api.receive('response_org_object_display', (data) => {
   if (data.status) {
     refreshObjectDisplay(data);
   }
+});
+
+// Org Limits Response Handler.
+window.api.receive('reponnse_org_limits', (data) => {
+  document.getElementById('results-table-wrapper').style.display = 'none';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'block';
+  displayRawResponse(data);
+  // if (data.status) {
+  //   refreshObjectDisplay(data);
+  // }
 });
 
 // ========= Messages to the main process ===============
