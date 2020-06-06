@@ -85,12 +85,19 @@ const object2ul = (data) => {
   return ul;
 };
 
-const generateTableHeader = (headerRow, labelText) => {
+const generateTableHeader = (headerRow, labelText, scope = 'col') => {
   const newHeader = document.createElement('th');
-  newHeader.setAttribute('scope', 'col');
+  newHeader.setAttribute('scope', scope);
   const textNode = document.createTextNode(labelText);
   newHeader.appendChild(textNode);
   headerRow.appendChild(newHeader);
+};
+
+const generateTableCell = (tableRow, content) => {
+  const contentNode = document.createTextNode(content);
+  const cellNode = document.createElement('td');
+  cellNode.appendChild(contentNode);
+  tableRow.appendChild(cellNode);
 };
 
 const displayRawResponse = (responseObject) => {
@@ -141,11 +148,9 @@ const refreshResponseTable = (sObjectData) => {
   for (let i = 0; i < sObjectData.records.length; i += 1) {
     dataRow = document.createElement('tr');
     // Put the object type as a row level header.
-    newData = document.createElement('th');
-    newData.setAttribute('scope', 'row');
-    textNode = document.createTextNode(sObjectData.records[i].attributes.type);
-    newData.appendChild(textNode);
-    dataRow.appendChild(newData);
+    generateTableHeader(dataRow, sObjectData.records[i].attributes.type, 'row');
+
+    // Add the result details.
     for (let j = 0; j < keys.length; j += 1) {
       newData = document.createElement('td');
       textNode = document.createTextNode(sObjectData.records[i][keys[j]]);
@@ -185,7 +190,6 @@ const displayGlobalDescribe = (sObjectData) => {
 
   // Define list of columns known to have a list of information for the right edge.
   const listColumns = ['urls'];
-
 
   // Display area.
   document.getElementById('results-table-wrapper').style.display = 'block';
@@ -272,6 +276,73 @@ const displayGlobalDescribe = (sObjectData) => {
   resultsTable.appendChild(tBody);
 };
 
+const displayOrgLimits = (limitData) => {
+  // Extract the Limit names.
+  const keys = Object.keys(limitData).sort();
+
+  // Display area.
+  document.getElementById('results-table-wrapper').style.display = 'block';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'none';
+  document.getElementById('results-summary-count').innerText = `Displaying information about ${keys.length} system limits`;
+
+  // Get the table.
+  const resultsTable = document.querySelector('#results-table');
+
+  // Clear existing table.
+  while (resultsTable.firstChild) {
+    resultsTable.removeChild(resultsTable.firstChild);
+  }
+
+  // Set Header
+  const tHead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.setAttribute('class', 'table-primary');
+  // Add the type column.
+  generateTableHeader(headRow, 'Limit');
+  generateTableHeader(headRow, 'Max');
+  generateTableHeader(headRow, 'Remaining');
+  generateTableHeader(headRow, 'Other');
+  tHead.appendChild(headRow);
+
+  // Add the data.
+  let dataRow;
+  let contentNode;
+  let cellNode;
+  let rowKeys;
+  let otherKey;
+  const tBody = document.createElement('tbody');
+  for (let i = 0; i < keys.length; i += 1) {
+    dataRow = document.createElement('tr');
+
+    // Add a key as header columnm.
+    generateTableHeader(dataRow, keys[i], 'row');
+
+    // Add Max and Remaining.
+    generateTableCell(dataRow, limitData[keys[i]].Max);
+    generateTableCell(dataRow, limitData[keys[i]].Remaining);
+
+    // Other values as UL.
+    rowKeys = Object.keys(limitData[keys[i]]);
+    if (rowKeys.length > 2) {
+      // Remove the two standard keys and work with what's left
+      otherKey = rowKeys.filter((item) => !['Max', 'Remaining'].includes(item)).pop();
+      cellNode = document.createElement('td');
+      cellNode.innerHTML = `<p>${otherKey}:<br>Max: ${limitData[keys[i]][otherKey].Max}<br>Remaining: ${limitData[keys[i]][otherKey].Remaining}</p>`;
+      dataRow.appendChild(cellNode);
+    } else {
+      // Blank placeholder.
+      generateTableCell(dataRow, '');
+    }
+
+    // Add the row to the table body.
+    tBody.appendChild(dataRow);
+  }
+
+  // Add the table body to the table.
+  resultsTable.appendChild(tHead);
+  resultsTable.appendChild(tBody);
+};
+
 // ===== Response handlers from IPC Messages to render context ======
 // Login response.
 window.api.receive('response_login', (data) => {
@@ -349,9 +420,9 @@ window.api.receive('reponnse_org_limits', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
   displayRawResponse(data);
-  // if (data.status) {
-  //   refreshObjectDisplay(data);
-  // }
+  if (data.status) {
+    displayOrgLimits(data.response);
+  }
 });
 
 // ========= Messages to the main process ===============
