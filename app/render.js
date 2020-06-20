@@ -5,6 +5,7 @@ $(document).ready(() => {
   $('#org-status').hide();
   $('#api-request-form').hide();
   $('#results-table-wrapper').hide();
+  $('#results-message-wrapper').hide();
   $('#results-object-viewer-wrapper').hide();
 
   // Setup to show/hide all the various controls needed for the APIs.
@@ -109,8 +110,20 @@ const displayRawResponse = (responseObject) => {
   });
 };
 
+const refreshQueryCountOnly = (queryCount) => {
+  document.getElementById('results-table-wrapper').style.display = 'none';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'none';
+  document.getElementById('results-message-wrapper').style.display = 'block';
+  let message = 'No Results Found.';
+  if (queryCount > 0) {
+    message = `Found ${queryCount} records`;
+  }
+  document.getElementById('results-message-only').innerText = message;
+};
+
 const refreshResponseTable = (sObjectData) => {
   document.getElementById('results-table-wrapper').style.display = 'block';
+  document.getElementById('results-message-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'none';
   document.getElementById('results-summary-count').innerText = `Fetched ${sObjectData.records.length} of ${sObjectData.totalSize} records`;
 
@@ -194,6 +207,7 @@ const displayGlobalDescribe = (sObjectData) => {
   // Display area.
   document.getElementById('results-table-wrapper').style.display = 'block';
   document.getElementById('results-object-viewer-wrapper').style.display = 'none';
+  document.getElementById('results-message-wrapper').style.display = 'none';
   document.getElementById('results-summary-count').innerText = `Your orgs contains ${sObjectData.length} objects (custom and standard)`;
 
   // Get the table.
@@ -283,6 +297,7 @@ const displayOrgLimits = (limitData) => {
   // Display area.
   document.getElementById('results-table-wrapper').style.display = 'block';
   document.getElementById('results-object-viewer-wrapper').style.display = 'none';
+  document.getElementById('results-message-wrapper').style.display = 'none';
   document.getElementById('results-summary-count').innerText = `Displaying information about ${keys.length} system limits`;
 
   // Get the table.
@@ -378,7 +393,12 @@ window.api.receive('response_generic', (data) => {
 window.api.receive('response_query', (data) => {
   if (data.status) {
     displayRawResponse(data);
-    refreshResponseTable(data.response);
+    // Detect and handle reponses with just a count.
+    if (data.response.records.length < 1) {
+      refreshQueryCountOnly(data.response.totalSize);
+    } else {
+      refreshResponseTable(data.response);
+    }
   } else {
     displayRawResponse(data.message);
   }
