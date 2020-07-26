@@ -7,7 +7,7 @@ const { contextBridge, ipcRenderer, remote } = require('electron');  // eslint-d
 contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
-      // whitelist channels
+      // List channels to allow.
       const validChannels = [
         'eforce_send_log',
         'sf_login',
