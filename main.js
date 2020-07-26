@@ -140,7 +140,6 @@ app.on('web-contents-created', (event, contents) => {
   });
 });
 
-
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
@@ -371,7 +370,6 @@ ipcMain.on('sf_describeGlobal', (event, args) => {
   });
 });
 
-
 /**
  * Get the Org Object.
  */
@@ -438,7 +436,6 @@ ipcMain.on('sf_orgExplore', (event, args) => {
     return true;
   });
 });
-
 
 // Get a logging message from a renderer.
 ipcMain.on('eforce_send_log', (event, args) => {
