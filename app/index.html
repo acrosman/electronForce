@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com">
     <link rel="stylesheet" href="../node_modules/bootswatch/dist/cyborg/bootstrap.min.css">
     <link rel="stylesheet" href="../node_modules/jquery.json-viewer/json-viewer/jquery.json-viewer.css">
     <link rel="stylesheet" href="dashboard.css">
@@ -83,7 +83,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-2">
                 <div class="card">
                     <div id="api-request-form" class='card-body'>
                         <label for="select-api">Select API</label>
@@ -98,6 +98,8 @@
                         </select>
                     </div>
                 </div>
+            </div>
+            <div class="col-md-10">
                 <div class="card">
                     <div id="rest-api-soql">
                         <fieldset>
@@ -151,8 +153,6 @@
                         </fieldset>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-6">
             </div>
         </div>
         <div class="row">
