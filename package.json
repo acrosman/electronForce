@@ -15,11 +15,40 @@
     "appId": "com.electron.electronForce",
     "productName": "ElectronForce",
     "mac": {
-      "category": "public.app-category.utilities",
-      "target": "zip"
+      "category": "public.app-category.utilities"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 440,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "artifactName": "electron-force-${version}.${ext}"
     },
     "win": {
-      "target": "zip"
+      "target": [{
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      },
+      {
+        "target": "portable"
+      }]
+    },
+    "nsis": {
+      "runAfterFinish": true,
+      "artifactName": "electron-force-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "electron-force.exe"
     },
     "linux": {
       "target": "zip"
