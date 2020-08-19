@@ -7,7 +7,7 @@ const { contextBridge, ipcRenderer, remote } = require('electron');  // eslint-d
 contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
-      // whitelist channels
+      // Approved channels
       const validChannels = [];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
