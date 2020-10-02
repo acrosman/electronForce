@@ -165,10 +165,7 @@ const refreshResponseTable = (sObjectData) => {
 
     // Add the result details.
     for (let j = 0; j < keys.length; j += 1) {
-      newData = document.createElement('td');
-      textNode = document.createTextNode(sObjectData.records[i][keys[j]]);
-      newData.appendChild(textNode);
-      dataRow.appendChild(newData);
+      generateTableCell(dataRow, sObjectData.records[i][keys[j]]);
     }
     tBody.appendChild(dataRow);
   }
@@ -256,33 +253,19 @@ const displayGlobalDescribe = (sObjectData) => {
 
     // Start with the priority columns.
     for (let j = 0; j < prioirtyColumns.length; j += 1) {
-      contentNode = document.createTextNode(sObjectData[i][prioirtyColumns[j]]);
-
-      // Add the new content to the row
-      newData = document.createElement('td');
-      newData.appendChild(contentNode);
-      dataRow.appendChild(newData);
+      generateTableCell(dataRow, sObjectData[i][prioirtyColumns[j]]);
     }
 
     // Add all non-special cased columns.
     for (let j = 0; j < keys.length; j += 1) {
       if (!prioirtyColumns.includes(keys[j]) && !listColumns.includes(keys[j])) {
-        contentNode = document.createTextNode(sObjectData[i][keys[j]]);
-        // Add the new content to the row
-        newData = document.createElement('td');
-        newData.appendChild(contentNode);
-        dataRow.appendChild(newData);
+        generateTableCell(dataRow, sObjectData[i][keys[j]]);
       }
     }
 
     // Add the list columns at the end
     for (let j = 0; j < listColumns.length; j += 1) {
-      contentNode = object2ul(sObjectData[i][listColumns[j]]);
-
-      // Add the new content to the row
-      newData = document.createElement('td');
-      newData.appendChild(contentNode);
-      dataRow.appendChild(newData);
+      generateTableCell(dataRow, sObjectData[i][listColumns[j]]);
     }
 
     tBody.appendChild(dataRow);
