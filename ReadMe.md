@@ -21,7 +21,7 @@ Currently only the standard login is supported, not OAuth2, so you likely will n
 
 In the login fields provide your username, password, and security token. If you are logging into a production or trailhead instance you can use the default login URL. If you are logging into a Sandbox use: https://test.salesforce.com.
 
-![ElectronForce Main screen.](https://raw.githubusercontent.com/acrosman/electronForce/master/documentation/images/ElectronForceMain.png "Login fields as described above and query API example as follows.")
+![ElectronForce Main screen.](./documentation/images/ElectronForceMain.png "Login fields as described above and query API example as follows.")
 
 The main interface includes the login information, API selector and parameter fields on the left, raw display of the previous API response on the right, and a processed version of the response at the bottom.
 
@@ -33,7 +33,7 @@ The SOQL and SOSL Query APIs allow you to run querys and searches using the appr
 
 At the bottom of the display ElectronForce provides a grid view of the query results:
 
-![ElectronForce Search Result Screen.](https://raw.githubusercontent.com/acrosman/electronForce/master/documentation/images/ElectronForceSearch.png "A table display of the Contacts returned from Salesforce").
+![ElectronForce Search Result Screen.](./documentation/images/ElectronForceSearch.png "A table display of the Contacts returned from Salesforce").
 
 
 _Note: Contacts shown are from a Salesforce Trailhead not from a production database._
@@ -42,7 +42,7 @@ _Note: Contacts shown are from a Salesforce Trailhead not from a production data
 
 Beyond exploring the data and testing queries, ElectronForce can also allow you to explore the metadata for a specific object provided via the Describe API.  Select the Describe API from the selector and enter the name of the object you would like described.  ElectronForce will format the resulting structures as an interactive tree view.
 
-![ElectronForce Describe Result Screen.](https://raw.githubusercontent.com/acrosman/electronForce/master/documentation/images/ElectronForceDescribe.png "A simple tree display of the describe response.").
+![ElectronForce Describe Result Screen.](./documentation/images/ElectronForceDescribe.png "A simple tree display of the describe response.").
 
 ### Run Global Describe
 
