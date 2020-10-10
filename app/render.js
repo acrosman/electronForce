@@ -64,6 +64,11 @@ const replaceText = (selector, text) => {
   if (element) element.innerText = text;
 };
 
+const downloadCSV = (data) => {
+  console.log("DOWNLOADED!");
+  console.log(data);
+}
+
 // Convert a simple object with name/value pairs, and sub-objects into an Unordered list
 const object2ul = (data) => {
   const ul = document.createElement('ul');
@@ -147,14 +152,26 @@ const refreshResponseTable = (sObjectData) => {
   // Add the type column.
   generateTableHeader(headRow, 'Type');
 
+  let dataInCSV = '';
+  const lineDelimiter = ',';
+  const columnDelimiter = '\n';
+
   // Add the other columns from the result set.
+  // Add headers into CSV
   for (let i = 0; i < keys.length; i += 1) {
     generateTableHeader(headRow, keys[i]);
+    dataInCSV += keys[i];
+    if (i != keys.length-1) {
+      dataInCSV += lineDelimiter;
+    }
   }
+  dataInCSV += columnDelimiter;
+
   tHead.appendChild(headRow);
   resultsTable.appendChild(tHead);
 
   // Add the data.
+  //Add data to CSV 
   let dataRow;
   let newData;
   const tBody = document.createElement('tbody');
@@ -166,9 +183,15 @@ const refreshResponseTable = (sObjectData) => {
     // Add the result details.
     for (let j = 0; j < keys.length; j += 1) {
       generateTableCell(dataRow, sObjectData.records[i][keys[j]]);
+      dataInCSV += sObjectData.records[i][keys[j]];
+      if (j != keys.length-1) {
+        dataInCSV += lineDelimiter;
+      }
     }
+    dataInCSV += columnDelimiter;
     tBody.appendChild(dataRow);
   }
+  console.log(dataInCSV);
   resultsTable.appendChild(tBody);
 };
 
