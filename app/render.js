@@ -64,7 +64,6 @@ const replaceText = (selector, text) => {
   if (element) element.innerText = text;
 };
 
-
 // Convert a simple object with name/value pairs, and sub-objects into an Unordered list
 const object2ul = (data) => {
   const ul = document.createElement('ul');
@@ -157,7 +156,7 @@ const refreshResponseTable = (sObjectData) => {
   for (let i = 0; i < keys.length; i += 1) {
     generateTableHeader(headRow, keys[i]);
     dataInCSV += keys[i];
-    if (i != keys.length-1) {
+    if (i !== keys.length - 1) {
       dataInCSV += lineDelimiter;
     }
   }
@@ -167,7 +166,7 @@ const refreshResponseTable = (sObjectData) => {
   resultsTable.appendChild(tHead);
 
   // Add the data.
-  //Add data to CSV 
+  // Add data to CSV
   let dataRow;
   let newData;
   const tBody = document.createElement('tbody');
@@ -180,7 +179,7 @@ const refreshResponseTable = (sObjectData) => {
     for (let j = 0; j < keys.length; j += 1) {
       generateTableCell(dataRow, sObjectData.records[i][keys[j]]);
       dataInCSV += sObjectData.records[i][keys[j]];
-      if (j != keys.length-1) {
+      if (j !== keys.length - 1) {
         dataInCSV += lineDelimiter;
       }
     }
@@ -188,20 +187,20 @@ const refreshResponseTable = (sObjectData) => {
     tBody.appendChild(dataRow);
   }
 
-  //Add export .csv for query
+  // Add export .csv for query
   const downloadCSVButton = document.getElementById('csv-query-export');
   downloadCSVButton.addEventListener('click', () => {
     if (dataInCSV == null) {
-      return; 
+      return;
     }
     const downloadLink = document.createElement('a');
-    dataInCSV = 'data:text/csv;charset=utf-8,' + dataInCSV;
+    dataInCSV = `data:text/csv;charset=utf-8,${dataInCSV}`;
     const encodedUri = encodeURI(dataInCSV);
-    downloadLink.setAttribute('href',encodedUri);
+    downloadLink.setAttribute('href', encodedUri);
     downloadLink.setAttribute('download', 'data.csv');
     document.body.appendChild(downloadLink);
     downloadLink.click();
-  })
+  });
   resultsTable.appendChild(tBody);
 };
 
