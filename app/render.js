@@ -191,9 +191,24 @@ const refreshResponseTable = (sObjectData) => {
     dataInCSV += columnDelimiter;
     tBody.appendChild(dataRow);
   }
-  console.log(dataInCSV);
+
+  //Add export .csv for query
+  const downloadCSVButton = document.getElementById('csv-query-export');
+  downloadCSVButton.addEventListener('click', () => {
+    if (dataInCSV == null) {
+      return; 
+    }
+    const downloadLink = document.createElement('a');
+    dataInCSV = 'data:text/csv;charset=utf-8,' + dataInCSV;
+    const encodedUri = encodeURI(dataInCSV);
+    downloadLink.setAttribute('href',encodedUri);
+    downloadLink.setAttribute('download', 'data.csv');
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+  })
   resultsTable.appendChild(tBody);
 };
+
 
 const refreshObjectDisplay = (data) => {
   $('#results-object-viewer-wrapper .results-summary h3').text(data.message);
