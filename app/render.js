@@ -64,10 +64,6 @@ const replaceText = (selector, text) => {
   if (element) element.innerText = text;
 };
 
-const downloadCSV = (data) => {
-  console.log("DOWNLOADED!");
-  console.log(data);
-}
 
 // Convert a simple object with name/value pairs, and sub-objects into an Unordered list
 const object2ul = (data) => {
@@ -208,7 +204,6 @@ const refreshResponseTable = (sObjectData) => {
   })
   resultsTable.appendChild(tBody);
 };
-
 
 const refreshObjectDisplay = (data) => {
   $('#results-object-viewer-wrapper .results-summary h3').text(data.message);
