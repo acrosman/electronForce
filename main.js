@@ -215,7 +215,7 @@ ipcMain.on('sf_logout', (event, args) => {
       mainWindow.webContents.send('response_logout', {
         status: false,
         message: 'Logout Failed',
-        response: err,
+        response: `${err}`,
         limitInfo: conn.limitInfo,
       });
       consoleWindow.webContents.send('log_message', {
@@ -243,10 +243,11 @@ ipcMain.on('sf_query', (event, args) => {
   const conn = sfConnections[args.org];
   conn.query(args.rest_api_soql_text, (err, result) => {
     if (err) {
+      debugger
       mainWindow.webContents.send('response_generic', {
         status: false,
         message: 'Query Failed',
-        response: err,
+        response: `${err}`,
         limitInfo: conn.limitInfo,
       });
       consoleWindow.webContents.send('log_message', {
@@ -277,7 +278,7 @@ ipcMain.on('sf_search', (event, args) => {
       mainWindow.webContents.send('response_generic', {
         status: false,
         message: 'Search Failed',
-        response: err,
+        response: `${err}`,
         limitInfo: conn.limitInfo,
       });
       consoleWindow.webContents.send('log_message', {
@@ -315,7 +316,7 @@ ipcMain.on('sf_describe', (event, args) => {
       mainWindow.webContents.send('response_generic', {
         status: false,
         message: 'Describe Failed',
-        response: err,
+        response: `${err}`,
         limitInfo: conn.limitInfo,
       });
 
@@ -348,7 +349,7 @@ ipcMain.on('sf_describeGlobal', (event, args) => {
       mainWindow.webContents.send('response_generic', {
         status: false,
         message: 'Describe Global Failed',
-        response: err,
+        response: `${err}`,
         limitInfo: conn.limitInfo,
       });
 
@@ -383,7 +384,7 @@ ipcMain.on('sf_orgExplore', (event, args) => {
       mainWindow.webContents.send('response_generic', {
         status: false,
         message: 'Describe Org in fetch process failed',
-        response: err,
+        response: `${err}`,
         limitInfo: conn.limitInfo,
       });
 
@@ -456,7 +457,7 @@ ipcMain.on('sf_orgLimits', (event, args) => {
       mainWindow.webContents.send('response_generic', {
         status: false,
         message: 'Limits Check Failed',
-        response: err,
+        response: `${err}`,
         limitInfo: conn.limitInfo,
       });
 
