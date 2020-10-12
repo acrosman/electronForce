@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "An Electron Wrapper on JSForce",
   "main": "main.js",
+  "engines": {
+    "node": ">=14"
+  },
   "scripts": {
     "start": "electron .",
     "lint": "eslint --ignore-path .gitignore src",
