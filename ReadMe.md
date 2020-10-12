@@ -6,6 +6,8 @@ ElectronForce is an Electron based Salesforce Org exploration tool using the [JS
 
 Right now, while the project is setup to build native applications on Mac, Windows, and Linux, I'm not maintaining builds. So it's a bit developer focused and you'll need to have [Node.js installed](https://nodejs.org/en/download/). Granted this is a largely an API interface so some technical ability is expected but longer-term not the ability to understand JavaScript. Anyway you don't need to know how to use Node just need to have the tools around.
 
+Recommended Node Version: 14.0.0 or greater
+
 From your terminal:
 
     git clone https://github.com/acrosman/electronForce.git
