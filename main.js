@@ -243,7 +243,6 @@ ipcMain.on('sf_query', (event, args) => {
   const conn = sfConnections[args.org];
   conn.query(args.rest_api_soql_text, (err, result) => {
     if (err) {
-      debugger
       mainWindow.webContents.send('response_generic', {
         status: false,
         message: 'Query Failed',
