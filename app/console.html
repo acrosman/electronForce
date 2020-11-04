@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com">
         <link rel="stylesheet" href="../node_modules/bootswatch/dist/cyborg/bootstrap.min.css">
         <link rel="stylesheet" href="../node_modules/jquery.json-viewer/json-viewer/jquery.json-viewer.css">
         <link rel="stylesheet" href="console.css">
@@ -11,7 +11,7 @@
     <body>
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-12" id="message-wrapper" style="max-height: 90vh">
+                <div class="col-md-12" id="message-wrapper">
                     <h3 class="text-muted">
                         ElectronForce Console
                     </h3>
