@@ -44,7 +44,7 @@ $.when($.ready).then(() => {
     }
   });
 
-  $('#select-api').change(() => {
+  $('#select-api').on('change', () => {
     // Show the controls for the selected API.
     const newValue = $('#select-api').val();
     $(`#${newValue}`).show();
