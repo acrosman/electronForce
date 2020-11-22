@@ -108,10 +108,16 @@ const generateTableHeader = (headerRow, labelText, scope = 'col') => {
 /**
  * Attaches a new table cell to an existing row.
  * @param {Object} tableRow The DOM element to attach the new element to.
- * @param {String} content The text to put in the cell.
+ * @param {object} content The content to put in the cell.
+ * @param {boolean} isText Defines if the content should be treated as text or a sub-element.
  */
-const generateTableCell = (tableRow, content) => {
-  const contentNode = document.createTextNode(content);
+const generateTableCell = (tableRow, content, isText = true) => {
+  let contentNode;
+  if (isText) {
+    contentNode = document.createTextNode(content);
+  } else {
+    contentNode = content;
+  }
   const cellNode = document.createElement('td');
   cellNode.appendChild(contentNode);
   tableRow.appendChild(cellNode);
@@ -299,7 +305,7 @@ const displayGlobalDescribe = (sObjectData) => {
 
     // Add the list columns at the end
     for (let j = 0; j < listColumns.length; j += 1) {
-      generateTableCell(dataRow, sObjectData[i][listColumns[j]]);
+      generateTableCell(dataRow, object2ul(sObjectData[i][listColumns[j]]), false);
     }
 
     tBody.appendChild(dataRow);
