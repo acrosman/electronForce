@@ -41,7 +41,11 @@ $.when($.ready).then(() => {
 
         // Add all the form items with the needed class, swap - for _ in ids.
         dataElements.each((index, item) => {
-          data[$(item).attr('id').replace(/-/g, '_')] = $(item).val();
+          if ($(item).attr('type') === 'checkbox') {
+            data[$(item).attr('id').replace(/-/g, '_')] = $(item).is(':checked');
+          } else {
+            data[$(item).attr('id').replace(/-/g, '_')] = $(item).val();
+          }
         });
 
         // Send prepared data to the main process.
@@ -319,6 +323,94 @@ const displayGlobalDescribe = (sObjectData) => {
   resultsTable.appendChild(tBody);
 };
 
+/**
+ * Displays the fields from the results of a object describe query.
+ * @param {String} objectType The name of the object for display.
+ * @param {Object} fieldData The results from JSForce to display.
+ */
+const displayObjectFieldDescribe = (objectType, fieldData) => {
+  // Define prioirty columns to display at left.
+  const prioirtyColumns = [
+    'label',
+    'name',
+    'type',
+    'picklistValues',
+    'restrictedPicklist',
+    'length',
+    'unique',
+  ];
+
+  // Define list of columns known to have a list of information to display at a list.
+  const listColumns = ['picklistValues'];
+
+  // Display area.
+  document.getElementById('results-table-wrapper').style.display = 'block';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'none';
+  document.getElementById('results-message-wrapper').style.display = 'none';
+  document.getElementById('results-summary-count').innerText = `Your ${objectType} contains ${fieldData.length} fields`;
+
+  // Get the table.
+  const resultsTable = document.querySelector('#results-table');
+
+  // Clear existing table.
+  while (resultsTable.firstChild) {
+    resultsTable.removeChild(resultsTable.firstChild);
+  }
+
+  // Extract the header.
+  const keys = Object.keys(fieldData[0]);
+
+  // Create the header row for the table.
+  const tHead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.setAttribute('class', 'table-primary');
+
+  // Add Priority Columns to the header
+  for (let i = 0; i < prioirtyColumns.length; i += 1) {
+    generateTableHeader(headRow, prioirtyColumns[i]);
+  }
+
+  // Add the other columns from the result set.
+  for (let i = 0; i < keys.length; i += 1) {
+    if (!prioirtyColumns.includes(keys[i])) {
+      generateTableHeader(headRow, keys[i]);
+    }
+  }
+
+  tHead.appendChild(headRow);
+  resultsTable.appendChild(tHead);
+
+  // Add the data.
+  let dataRow;
+  const tBody = document.createElement('tbody');
+  for (let i = 0; i < fieldData.length; i += 1) {
+    dataRow = document.createElement('tr');
+
+    // Start with the priority columns.
+    for (let j = 0; j < prioirtyColumns.length; j += 1) {
+      if (!listColumns.includes(prioirtyColumns[j])) {
+        generateTableCell(dataRow, fieldData[i][prioirtyColumns[j]]);
+      } else {
+        generateTableCell(dataRow, object2ul(fieldData[i][prioirtyColumns[j]]), false);
+      }
+    }
+
+    // Add all non-special cased columns.
+    for (let j = 0; j < keys.length; j += 1) {
+      if (!prioirtyColumns.includes(keys[j])) {
+        generateTableCell(dataRow, fieldData[i][keys[j]]);
+      }
+    }
+
+    tBody.appendChild(dataRow);
+  }
+  resultsTable.appendChild(tBody);
+};
+
+/**
+ * Displays a table with the current Org limits.
+ * @param {Object} limitData Response from the API.
+ */
 const displayOrgLimits = (limitData) => {
   // Extract the Limit names.
   const keys = Object.keys(limitData).sort();
@@ -435,10 +527,13 @@ window.api.receive('response_query', (data) => {
 window.api.receive('response_describe', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
-  displayRawResponse(data);
-  if (data.status) {
+
+  if (data.request.rest_api_describe_limit === true) {
+    displayObjectFieldDescribe(data.response.label, data.response.fields);
+  } else if (data.status) {
     refreshObjectDisplay(data);
   }
+  displayRawResponse(data);
 });
 
 // Global Describe Response Handler: use jsTree.
