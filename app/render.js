@@ -1,6 +1,6 @@
 /* global $ */
 // Initial interface setup using jQuery (since it's around from bootstrap anyway).
-$(document).ready(() => {
+$.when($.ready).then(() => {
   // Hide the places for handling responses until we have some.
   $('#org-status').hide();
   $('#api-request-form').hide();
@@ -29,8 +29,11 @@ $(document).ready(() => {
       const trigger = $('.sf-api-trigger-button', element);
       trigger.wrapperElement = element;
       // This click handler provides the trigger to send messages to the main process.
-      trigger.click((event) => {
-        const dataElements = $('.api-data-element', event.currentTarget.wrapperElement);
+      trigger.on('click', (event) => {
+        const dataElements = $(
+          '.api-data-element',
+          event.currentTarget.wrapperElement,
+        );
         const data = { org: $('#active-org').val() };
         dataElements.each((index, item) => {
           data[$(item).attr('id').replace(/-/g, '_')] = $(item).val();
@@ -48,12 +51,14 @@ $(document).ready(() => {
 
     // Hide all other controls.
     let hideSelector;
-    $('#select-api').find('option').each((index, item) => {
-      if (item.value !== newValue) {
-        hideSelector = item.value;
-        $(`#${hideSelector}`).hide();
-      }
-    });
+    $('#select-api')
+      .find('option')
+      .each((index, item) => {
+        if (item.value !== newValue) {
+          hideSelector = item.value;
+          $(`#${hideSelector}`).hide();
+        }
+      });
   });
 });
 
@@ -142,7 +147,6 @@ const refreshResponseTable = (sObjectData) => {
   const tHead = document.createElement('thead');
   const headRow = document.createElement('tr');
   headRow.setAttribute('class', 'table-primary');
-  let textNode;
 
   // Add the type column.
   generateTableHeader(headRow, 'Type');
@@ -156,7 +160,6 @@ const refreshResponseTable = (sObjectData) => {
 
   // Add the data.
   let dataRow;
-  let newData;
   const tBody = document.createElement('tbody');
   for (let i = 0; i < sObjectData.records.length; i += 1) {
     dataRow = document.createElement('tr');
@@ -222,7 +225,6 @@ const displayGlobalDescribe = (sObjectData) => {
   const tHead = document.createElement('thead');
   const headRow = document.createElement('tr');
   headRow.setAttribute('class', 'table-primary');
-  let contentNode;
 
   // Add Priority Columns to the header
   for (let i = 0; i < prioirtyColumns.length; i += 1) {
@@ -246,7 +248,6 @@ const displayGlobalDescribe = (sObjectData) => {
 
   // Add the data.
   let dataRow;
-  let newData;
   const tBody = document.createElement('tbody');
   for (let i = 0; i < sObjectData.length; i += 1) {
     dataRow = document.createElement('tr');
@@ -304,7 +305,6 @@ const displayOrgLimits = (limitData) => {
 
   // Add the data.
   let dataRow;
-  let contentNode;
   let cellNode;
   let rowKeys;
   let otherKey;
