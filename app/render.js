@@ -91,6 +91,12 @@ const object2ul = (data) => {
   return ul;
 };
 
+/**
+ * Attaches the DOM element for a table header element attached an existing table.
+ * @param {Object} headerRow The DOM element to attach the new header to.
+ * @param {String} labelText The text for the element.
+ * @param {String} scope The scope attribute to use for the element, defaults to col.
+ */
 const generateTableHeader = (headerRow, labelText, scope = 'col') => {
   const newHeader = document.createElement('th');
   newHeader.setAttribute('scope', scope);
@@ -99,6 +105,11 @@ const generateTableHeader = (headerRow, labelText, scope = 'col') => {
   headerRow.appendChild(newHeader);
 };
 
+/**
+ * Attaches a new table cell to an existing row.
+ * @param {Object} tableRow The DOM element to attach the new element to.
+ * @param {String} content The text to put in the cell.
+ */
 const generateTableCell = (tableRow, content) => {
   const contentNode = document.createTextNode(content);
   const cellNode = document.createElement('td');
@@ -106,6 +117,10 @@ const generateTableCell = (tableRow, content) => {
   tableRow.appendChild(cellNode);
 };
 
+/**
+ * Displays an object as JSON in the raw response section of the interface.
+ * @param {Object} responseObject The JSForce response object.
+ */
 const displayRawResponse = (responseObject) => {
   $('#raw-response').jsonViewer(responseObject, {
     collapsed: true,
@@ -115,6 +130,10 @@ const displayRawResponse = (responseObject) => {
   });
 };
 
+/**
+ * Updates the query count information when a count query is run.
+ * @param {Integer} queryCount The number to display.
+ */
 const refreshQueryCountOnly = (queryCount) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'none';
@@ -126,6 +145,11 @@ const refreshQueryCountOnly = (queryCount) => {
   document.getElementById('results-message-only').innerText = message;
 };
 
+/**
+ * Generates a data table from a list of sObjects returned from a query, and displays it
+ * in the results-table-wrapper area of the interface.
+ * @param {Object} sObjectData A JSForce query response with SF SObject data.
+ */
 const refreshResponseTable = (sObjectData) => {
   document.getElementById('results-table-wrapper').style.display = 'block';
   document.getElementById('results-message-wrapper').style.display = 'none';
@@ -175,6 +199,11 @@ const refreshResponseTable = (sObjectData) => {
   resultsTable.appendChild(tBody);
 };
 
+/**
+ * Displays an object in the results-object-viewer section of the interface using JSONViewer.
+ *
+ * @param {Object} data The object to display, object must contain message and response attributes.
+ */
 const refreshObjectDisplay = (data) => {
   $('#results-object-viewer-wrapper .results-summary h3').text(data.message);
 
@@ -193,6 +222,10 @@ const refreshObjectDisplay = (data) => {
   });
 };
 
+/**
+ * Displays the results of a Global describe query.
+ * @param {Object} sObjectData The results from JSForce to display.
+ */
 const displayGlobalDescribe = (sObjectData) => {
   // Define prioirty columns to display at left.
   const prioirtyColumns = [
