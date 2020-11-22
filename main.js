@@ -165,6 +165,11 @@ ipcMain.on('sf_login', (event, args) => {
   }
 
   conn.login(args.username, password, (err, userInfo) => {
+    // Since we send the args back to the interface, it's a good idea
+    // to remove the security information.
+    args.password = '';
+    args.token = '';
+
     if (err) {
       consoleWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
@@ -177,6 +182,7 @@ ipcMain.on('sf_login', (event, args) => {
         message: 'Login Failed',
         response: err,
         limitInfo: conn.limitInfo,
+        request: args,
       });
       return true;
     }
@@ -203,6 +209,8 @@ ipcMain.on('sf_login', (event, args) => {
       status: true,
       message: 'Login Successful',
       response: userInfo,
+      limitInfo: conn.limitInfo,
+      request: args,
     });
     return true;
   });
@@ -220,6 +228,7 @@ ipcMain.on('sf_logout', (event, args) => {
         message: 'Logout Failed',
         response: `${err}`,
         limitInfo: conn.limitInfo,
+        request: args,
       });
       consoleWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
@@ -234,6 +243,7 @@ ipcMain.on('sf_logout', (event, args) => {
       message: 'Logout Successful',
       response: {},
       limitInfo: conn.limitInfo,
+      request: args,
     });
     sfConnections[args.org] = null;
     return true;
@@ -252,6 +262,7 @@ ipcMain.on('sf_query', (event, args) => {
         message: 'Query Failed',
         response: `${err}`,
         limitInfo: conn.limitInfo,
+        request: args,
       });
       consoleWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
@@ -266,6 +277,7 @@ ipcMain.on('sf_query', (event, args) => {
       message: 'Query Successful',
       response: result,
       limitInfo: conn.limitInfo,
+      request: args,
     });
     return true;
   });
@@ -283,6 +295,7 @@ ipcMain.on('sf_search', (event, args) => {
         message: 'Search Failed',
         response: `${err}`,
         limitInfo: conn.limitInfo,
+        request: args,
       });
       consoleWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
@@ -304,6 +317,7 @@ ipcMain.on('sf_search', (event, args) => {
       message: 'Search Successful',
       response: adjustedResult,
       limitInfo: conn.limitInfo,
+      request: args,
     });
     return true;
   });
@@ -321,6 +335,7 @@ ipcMain.on('sf_describe', (event, args) => {
         message: 'Describe Failed',
         response: `${err}`,
         limitInfo: conn.limitInfo,
+        request: args,
       });
 
       consoleWindow.webContents.send('log_message', {
@@ -337,6 +352,7 @@ ipcMain.on('sf_describe', (event, args) => {
       message: `Describe ${args.rest_api_describe_text} Successful`,
       response: result,
       limitInfo: conn.limitInfo,
+      request: args,
     });
     return true;
   });
@@ -354,6 +370,7 @@ ipcMain.on('sf_describeGlobal', (event, args) => {
         message: 'Describe Global Failed',
         response: `${err}`,
         limitInfo: conn.limitInfo,
+        request: args,
       });
 
       consoleWindow.webContents.send('log_message', {
@@ -370,6 +387,7 @@ ipcMain.on('sf_describeGlobal', (event, args) => {
       message: 'Describe Global Successful',
       response: result,
       limitInfo: conn.limitInfo,
+      request: args,
     });
     return true;
   });
@@ -389,6 +407,7 @@ ipcMain.on('sf_orgExplore', (event, args) => {
         message: 'Describe Org in fetch process failed',
         response: `${err}`,
         limitInfo: conn.limitInfo,
+        request: args,
       });
 
       consoleWindow.webContents.send('log_message', {
@@ -419,6 +438,7 @@ ipcMain.on('sf_orgExplore', (event, args) => {
           message: 'Org Fetch Failed',
           response: qErr,
           limitInfo: conn.limitInfo,
+          request: args,
         });
 
         consoleWindow.webContents.send('log_message', {
@@ -435,6 +455,7 @@ ipcMain.on('sf_orgExplore', (event, args) => {
         message: 'Fetched Org Details',
         response: qResult.records[0],
         limitInfo: conn.limitInfo,
+        request: args,
       });
       return true;
     });
@@ -462,6 +483,7 @@ ipcMain.on('sf_orgLimits', (event, args) => {
         message: 'Limits Check Failed',
         response: `${err}`,
         limitInfo: conn.limitInfo,
+        request: args,
       });
 
       consoleWindow.webContents.send('log_message', {
@@ -478,6 +500,7 @@ ipcMain.on('sf_orgLimits', (event, args) => {
       message: 'Org Limit Check Successful',
       response: result,
       limitInfo: conn.limitInfo,
+      request: args,
     });
     return true;
   });
