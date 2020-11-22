@@ -68,8 +68,8 @@
     "url": "https://github.com/acrosman/electronForce"
   },
   "dependencies": {
-    "bootstrap": "^4.5.2",
-    "bootswatch": "^4.5.2",
+    "bootstrap": "^4.5.3",
+    "bootswatch": "^4.5.3",
     "jquery": "^3.5.1",
     "jquery.json-viewer": "^1.4.0",
     "jsforce": "^1.10.0",
@@ -79,16 +79,16 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "debug-menu": "^0.6.1",
-    "electron": "^8.5.2",
-    "electron-builder": "^22.8.1",
+    "electron": "^8.5.5",
+    "electron-builder": "^22.9.1",
     "electron-debug": "^2.2.0",
     "electron-reloader": "^1.0.1",
     "eslint": "^5.3.0",
     "eslint-config-airbnb": "^17.1.1",
-    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jsx-a11y": "^6.3.1",
-    "eslint-plugin-react": "^7.21.3",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.21.5",
     "mocha": "^7.2.0"
   }
 }
