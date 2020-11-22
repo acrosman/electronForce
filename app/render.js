@@ -28,16 +28,22 @@ $.when($.ready).then(() => {
       element.hide();
       const trigger = $('.sf-api-trigger-button', element);
       trigger.wrapperElement = element;
+
       // This click handler provides the trigger to send messages to the main process.
       trigger.on('click', (event) => {
+        // All form elements that need to be sent to the API must have class api-data-element.
         const dataElements = $(
           '.api-data-element',
           event.currentTarget.wrapperElement,
         );
+        // Send the currently selected org.
         const data = { org: $('#active-org').val() };
+
+        // Add all the form items with the needed class, swap - for _ in ids.
         dataElements.each((index, item) => {
           data[$(item).attr('id').replace(/-/g, '_')] = $(item).val();
         });
+
         // Send prepared data to the main process.
         window.api.send(`sf_${apiSelectors[selector]}`, data);
       });
@@ -425,7 +431,6 @@ window.api.receive('response_query', (data) => {
   }
 });
 
-// @TODO: Refactor to merge the next three functions.
 // Describe Response Handler: setup jsTree.
 window.api.receive('response_describe', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
