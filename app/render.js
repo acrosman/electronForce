@@ -482,6 +482,4 @@ document.getElementById('login-trigger').addEventListener('click', () => {
 document.getElementById('logout-trigger').addEventListener('click', () => {
   window.api.send('sf_logout', { org: document.getElementById('active-org').value });
   document.getElementById('org-status').style.display = 'none';
-  // @TODO: Remove org from list of active orgs.
-  // @TODO: Update/hide status area if no orgs remain.
 });
