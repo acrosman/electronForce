@@ -403,7 +403,6 @@ window.api.receive('response_login', (data) => {
 // Logout Response.
 window.api.receive('response_logout', (data) => {
   displayRawResponse(data);
-  // TODO: Remove connection information.
 });
 
 // Generic Response.
