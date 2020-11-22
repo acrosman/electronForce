@@ -194,7 +194,10 @@ ipcMain.on('sf_login', (event, args) => {
     });
 
     // Save the next connection in the global storage.
-    sfConnections[userInfo.organizationId] = conn;
+    sfConnections[userInfo.organizationId] = {
+      instanceUrl: conn.instanceUrl,
+      accessToken: conn.accessToken,
+    };
 
     mainWindow.webContents.send('response_login', {
       status: true,
@@ -209,7 +212,7 @@ ipcMain.on('sf_login', (event, args) => {
  * Logout of a Salesforce org.
  */
 ipcMain.on('sf_logout', (event, args) => {
-  const conn = sfConnections[args.org];
+  const conn = new jsforce.Connection(sfConnections[args.org]);
   conn.logout((err) => {
     if (err) {
       mainWindow.webContents.send('response_logout', {
@@ -232,6 +235,7 @@ ipcMain.on('sf_logout', (event, args) => {
       response: {},
       limitInfo: conn.limitInfo,
     });
+    sfConnections[args.org] = null;
     return true;
   });
 });
@@ -240,7 +244,7 @@ ipcMain.on('sf_logout', (event, args) => {
  * Query Salesforce.
  */
 ipcMain.on('sf_query', (event, args) => {
-  const conn = sfConnections[args.org];
+  const conn = new jsforce.Connection(sfConnections[args.org]);
   conn.query(args.rest_api_soql_text, (err, result) => {
     if (err) {
       mainWindow.webContents.send('response_generic', {
@@ -271,7 +275,7 @@ ipcMain.on('sf_query', (event, args) => {
  * Search Salesforce.
  */
 ipcMain.on('sf_search', (event, args) => {
-  const conn = sfConnections[args.org];
+  const conn = new jsforce.Connection(sfConnections[args.org]);
   conn.search(args.rest_api_sosl_text, (err, result) => {
     if (err) {
       mainWindow.webContents.send('response_generic', {
@@ -309,7 +313,7 @@ ipcMain.on('sf_search', (event, args) => {
  * Describe Object Type.
  */
 ipcMain.on('sf_describe', (event, args) => {
-  const conn = sfConnections[args.org];
+  const conn = new jsforce.Connection(sfConnections[args.org]);
   conn.sobject(args.rest_api_describe_text).describe((err, result) => {
     if (err) {
       mainWindow.webContents.send('response_generic', {
@@ -342,7 +346,7 @@ ipcMain.on('sf_describe', (event, args) => {
  * Global Describe Call.
  */
 ipcMain.on('sf_describeGlobal', (event, args) => {
-  const conn = sfConnections[args.org];
+  const conn = new jsforce.Connection(sfConnections[args.org]);
   conn.describeGlobal((err, result) => {
     if (err) {
       mainWindow.webContents.send('response_generic', {
@@ -375,7 +379,7 @@ ipcMain.on('sf_describeGlobal', (event, args) => {
  * Get the Org Object.
  */
 ipcMain.on('sf_orgExplore', (event, args) => {
-  const conn = sfConnections[args.org];
+  const conn = new jsforce.Connection(sfConnections[args.org]);
 
   // Get the org object's list of fields.
   conn.sobject('Organization').describe((err, result) => {
@@ -450,7 +454,7 @@ ipcMain.on('eforce_send_log', (event, args) => {
 
 // Fetch org limits
 ipcMain.on('sf_orgLimits', (event, args) => {
-  const conn = sfConnections[args.org];
+  const conn = new jsforce.Connection(sfConnections[args.org]);
   conn.limits((err, result) => {
     if (err) {
       mainWindow.webContents.send('response_generic', {
