@@ -151,6 +151,8 @@ app.on('activate', () => {
 });
 
 // @TODO: Break out the definition of all these into a file and just bulk load.
+//  These are all just a label, and function, so an object with those things would
+//  do it nicely.
 
 // Handle Salesforce Login
 ipcMain.on('sf_login', (event, args) => {
@@ -529,9 +531,43 @@ ipcMain.on('sf_orgProfiles', (event, args) => {
     }
 
     // Send records back to the interface.
-    mainWindow.webContents.send('response_generic', {
+    mainWindow.webContents.send('response_query', {
       status: true,
       message: 'Profile Listing Complete',
+      response: result,
+      limitInfo: conn.limitInfo,
+      request: args,
+    });
+    return true;
+  });
+});
+
+// Fetch org Permission Sets
+ipcMain.on('sf_orgPermSets', (event, args) => {
+  const profileQuery = 'SELECT Id, Name, Label, Description, IsCustom, IsOwnedByProfile, Profile.Name FROM PermissionSet ORDER BY IsOwnedByProfile, IsCustom DESC';
+  const conn = new jsforce.Connection(sfConnections[args.org]);
+  conn.query(profileQuery, (err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Profile Listing Failed',
+        response: `${err}`,
+        limitInfo: conn.limitInfo,
+        request: args,
+      });
+
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Error Listing Error: ${err}`,
+      });
+      return true;
+    }
+
+    // Send records back to the interface.
+    mainWindow.webContents.send('response_permset_list', {
+      status: true,
+      message: 'Permission Set Listing Complete',
       response: result,
       limitInfo: conn.limitInfo,
       request: args,

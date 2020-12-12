@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; font-src https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:">
     <link rel="stylesheet" href="../node_modules/bootswatch/dist/cyborg/bootstrap.min.css">
     <link rel="stylesheet" href="../node_modules/jquery.json-viewer/json-viewer/jquery.json-viewer.css">
     <link rel="stylesheet" href="dashboard.css">
@@ -48,17 +49,22 @@
                                     <form>
                                         <div class="form-group">
                                             <label for="login-username">User Name</label>
-                                            <input type="text" id="login-username" class="form-control" aria-describedby="usernameHelp" placeholder="Enter Salesforce Username">
-                                            <small id="usernameHelp" class="form-text">Your Salesforce username must be in the form of an email address.</small>
+                                            <input type="text" id="login-username" class="form-control" aria-describedby="usernameHelp"
+                                                placeholder="Enter Salesforce Username">
+                                            <small id="usernameHelp" class="form-text">Your Salesforce username must be
+                                                in the form of an email address.</small>
                                         </div>
                                         <div class="form-group">
                                             <label for="login-password">Password</label>
-                                            <input type="password" id="login-password" class="form-control" >
+                                            <input type="password" id="login-password" class="form-control">
                                         </div>
                                         <div class="form-group">
                                             <label for="login-token">Security Token</label>
-                                            <input type="password" class="form-control" aria-describedby="tokenHelp"  id="login-token">
-                                            <small id="tokenHelp" class="form-text">Likely you will need your Saleforce Security token. If you do not have it follow <a href='https://help.salesforce.com/articleView?id=user_security_token.htm&type=5'>these reset instructions.</a></small>
+                                            <input type="password" class="form-control" aria-describedby="tokenHelp" id="login-token">
+                                            <small id="tokenHelp" class="form-text">Likely you will need your Saleforce
+                                                Security token. If you do not have it follow <a
+                                                    href='https://help.salesforce.com/articleView?id=user_security_token.htm&type=5'>these
+                                                    reset instructions.</a></small>
                                         </div>
                                         <div class="form-group">
                                             <label for="login-url">Login URL</label>
@@ -95,8 +101,9 @@
                             <option value="org-describe-global">Describe Global</option>
                             <option value="org-explorer">Org Object Explorer</option>
                             <option value="org-limits">Display Org Limits</option>
-                            <option value="org-profiles">Profile Information</option>
-                            <option value="org-permsets">Permission Set Information</option>
+                            <option value="org-profiles">Profile List</option>
+                            <option value="org-permsets">Permission Set List</option>
+                            <option value="org-permset-detail">Permission Set Detail</option>
                             <option value="org-object-sharing">Org Wide Defaults (OWDs)</option>
                         </select>
                     </div>
@@ -135,7 +142,9 @@
                                 <div class="form-check">
                                     <input type="checkbox" id="rest-api-describe-limit" name="rest-api-describe-limit"
                                         class="api-data-element form-control form-check-input" value="1">
-                                    <label for="rest-api-describe-limit" class="form-check-label">Display Fields Only</label>
+                                    <label for="rest-api-describe-limit" class="form-check-label">
+                                        Display Fields Only
+                                    </label>
                                 </div>
                             </div>
                             <button type="button" id="rest-api-describe-trigger"
@@ -162,20 +171,34 @@
                     </div>
                     <div id="org-profiles">
                         <fieldset>
-                            <button type="button" id="org-profile-trigger" class="sf-api-trigger-button btn btn-success">Fetch
-                                Profiles</button>
+                            <button type="button" id="org-profile-trigger" class="sf-api-trigger-button btn btn-success">
+                                Fetch Profiles
+                            </button>
                         </fieldset>
                     </div>
                     <div id="org-permsets">
                         <fieldset>
-                            <button type="button" id="org-permsets-trigger" class="sf-api-trigger-button btn btn-success">Fetch Permissions
-                                Sets</button>
+                            <button type="button" id="org-permsets-trigger" class="sf-api-trigger-button btn btn-success">
+                                Fetch Permissions Sets
+                            </button>
+                            </fieldset>
+                            </div>
+                            <div id="org-permset-detail">
+                                <fieldset>
+                                    <div class="form-group">
+                                        <label for="rest-api-describe-text">Enter Permission Set Name:</label>
+                                        <input type="text" id="org-permset-detail" class="api-data-element form-control">
+                                    </div>
+                                    <button type="button" id="org-permset-detail-trigger" class="sf-api-trigger-button btn btn-success">
+                                        Describe Object
+                                    </button>
                         </fieldset>
                     </div>
                     <div id="org-object-sharing">
                         <fieldset>
-                            <button type="button" id="org-object-sharing-trigger" class="sf-api-trigger-button btn btn-success">Fetch
-                                OWDs</button>
+                            <button type="button" id="org-object-sharing-trigger" class="sf-api-trigger-button btn btn-success">
+                                Fetch OWDs
+                            </button>
                         </fieldset>
                     </div>
                 </div>

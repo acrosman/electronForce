@@ -35,6 +35,7 @@ contextBridge.exposeInMainWorld(
         'response_describe_global',
         'response_org_object_display',
         'reponnse_org_limits',
+        'response_permset_list',
         'response_generic',
       ];
       if (validChannels.includes(channel)) {

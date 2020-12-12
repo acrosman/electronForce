@@ -21,6 +21,7 @@ $.when($.ready).then(() => {
     'org-limits': 'orgLimits',
     'org-profiles': 'orgProfiles',
     'org-permsets': 'orgPermSets',
+    'org-permset-detail': 'orgPermSetDetail',
     'org-object-sharing': 'owds',
   };
 
@@ -109,13 +110,18 @@ const object2ul = (data) => {
  * @param {Object} headerRow The DOM element to attach the new header to.
  * @param {String} labelText The text for the element.
  * @param {String} scope The scope attribute to use for the element, defaults to col.
+ * @param {Integer} position The index to insert the element. Default -1 appends it to the end.
  */
-const generateTableHeader = (headerRow, labelText, scope = 'col') => {
+const generateTableHeader = (headerRow, labelText, scope = 'col', position = -1) => {
   const newHeader = document.createElement('th');
   newHeader.setAttribute('scope', scope);
   const textNode = document.createTextNode(labelText);
   newHeader.appendChild(textNode);
-  headerRow.appendChild(newHeader);
+  if (position === -1) {
+    headerRow.appendChild(newHeader);
+  } else {
+    headerRow.insertBefore(newHeader, headerRow.children[position]);
+  }
 };
 
 /**
@@ -123,8 +129,9 @@ const generateTableHeader = (headerRow, labelText, scope = 'col') => {
  * @param {Object} tableRow The DOM element to attach the new element to.
  * @param {object} content The content to put in the cell.
  * @param {boolean} isText Defines if the content should be treated as text or a sub-element.
+ * @param {Integer} position The index to insert to new cell. Default -1 appends to the end.
  */
-const generateTableCell = (tableRow, content, isText = true) => {
+const generateTableCell = (tableRow, content, isText = true, position = -1) => {
   let contentNode;
   if (isText) {
     contentNode = document.createTextNode(content);
@@ -133,7 +140,11 @@ const generateTableCell = (tableRow, content, isText = true) => {
   }
   const cellNode = document.createElement('td');
   cellNode.appendChild(contentNode);
-  tableRow.appendChild(cellNode);
+  if (position === -1) {
+    tableRow.appendChild(cellNode);
+  } else {
+    tableRow.insertBefore(cellNode, tableRow.children[position]);
+  }
 };
 
 /**
@@ -169,7 +180,7 @@ const refreshQueryCountOnly = (queryCount) => {
  * in the results-table-wrapper area of the interface.
  * @param {Object} sObjectData A JSForce query response with SF SObject data.
  */
-const refreshResponseTable = (sObjectData) => {
+const refreshResponseTable = (sObjectData, displayType = true) => {
   document.getElementById('results-table-wrapper').style.display = 'block';
   document.getElementById('results-message-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'none';
@@ -192,7 +203,9 @@ const refreshResponseTable = (sObjectData) => {
   headRow.setAttribute('class', 'table-primary');
 
   // Add the type column.
-  generateTableHeader(headRow, 'Type');
+  if (displayType) {
+    generateTableHeader(headRow, 'Type');
+  }
 
   // Add the other columns from the result set.
   for (let i = 0; i < keys.length; i += 1) {
@@ -206,8 +219,10 @@ const refreshResponseTable = (sObjectData) => {
   const tBody = document.createElement('tbody');
   for (let i = 0; i < sObjectData.records.length; i += 1) {
     dataRow = document.createElement('tr');
-    // Put the object type as a row level header.
-    generateTableHeader(dataRow, sObjectData.records[i].attributes.type, 'row');
+    if (displayType) {
+      // Put the object type as a row level header.
+      generateTableHeader(dataRow, sObjectData.records[i].attributes.type, 'row');
+    }
 
     // Add the result details.
     for (let j = 0; j < keys.length; j += 1) {
@@ -566,6 +581,44 @@ window.api.receive('reponnse_org_limits', (data) => {
   displayRawResponse(data);
   if (data.status) {
     displayOrgLimits(data.response);
+  }
+});
+
+// Permission Set Listing Response. Print the results in a table, offer links to details.
+window.api.receive('response_permset_list', (data) => {
+  if (data.status) {
+    displayRawResponse(data);
+    const cleanedData = data.response;
+    // Need to extract the Profile name, when present.
+    for (let i = 0; i < data.response.records.length; i += 1) {
+      if (data.response.records[i].Profile != null) {
+        cleanedData.records[i].Profile = data.response.records[i].Profile.Name;
+      }
+    }
+    refreshResponseTable(data.response, false);
+
+    // Correct the displayed information.
+    document.getElementById('results-summary-count').innerText = `This Org has ${data.response.totalSize} permission sets`;
+
+    // Add a column of buttons to get more details about the set.
+    const resultsTable = document.querySelector('#results-table');
+    let buttonCell;
+    let row;
+    for (let i = 0; i < resultsTable.rows.length; i += 1) {
+      row = resultsTable.rows[i];
+      if (i === 0) {
+        generateTableHeader(row, '', 'col', 0);
+      } else {
+        buttonCell = document.createElement('button');
+        buttonCell.innerHTML = 'Details';
+        buttonCell.classList.add('permset-detail-button');
+        buttonCell.dataset.permSetName = data.response.records[i - 1].Name;
+        generateTableCell(row, buttonCell, false, 0);
+      }
+    }
+    // Add click listener for all the new buttons
+  } else {
+    displayRawResponse(data.message);
   }
 });
 
