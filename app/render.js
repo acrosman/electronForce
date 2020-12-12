@@ -19,6 +19,9 @@ $.when($.ready).then(() => {
     'org-explorer': 'orgExplore',
     'org-describe-global': 'describeGlobal',
     'org-limits': 'orgLimits',
+    'org-profiles': 'orgProfiles',
+    'org-permsets': 'orgPermSets',
+    'org-object-sharing': 'owds',
   };
 
   let element;

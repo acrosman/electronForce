@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld(
         'sf_orgExplore',
         'sf_describeGlobal',
         'sf_orgLimits',
+        'sf_orgProfiles',
+        'sf_orgPermSets',
+        'sf_owds',
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);

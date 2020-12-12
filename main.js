@@ -505,3 +505,37 @@ ipcMain.on('sf_orgLimits', (event, args) => {
     return true;
   });
 });
+
+// Fetch org profiles
+ipcMain.on('sf_orgProfiles', (event, args) => {
+  const profileQuery = 'SELECT Id, Name, Description FROM Profile';
+  const conn = new jsforce.Connection(sfConnections[args.org]);
+  conn.query(profileQuery, (err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Profile Listing Failed',
+        response: `${err}`,
+        limitInfo: conn.limitInfo,
+        request: args,
+      });
+
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Error Listing Error: ${err}`,
+      });
+      return true;
+    }
+
+    // Send records back to the interface.
+    mainWindow.webContents.send('response_generic', {
+      status: true,
+      message: 'Profile Listing Complete',
+      response: result,
+      limitInfo: conn.limitInfo,
+      request: args,
+    });
+    return true;
+  });
+});
