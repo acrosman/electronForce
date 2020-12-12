@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld(
         'sf_orgLimits',
         'sf_orgProfiles',
         'sf_orgPermSets',
+        'sf_orgPermSetDetail',
         'sf_owds',
       ];
       if (validChannels.includes(channel)) {
@@ -36,6 +37,7 @@ contextBridge.exposeInMainWorld(
         'response_org_object_display',
         'reponnse_org_limits',
         'response_permset_list',
+        'response_permset_detail',
         'response_generic',
       ];
       if (validChannels.includes(channel)) {

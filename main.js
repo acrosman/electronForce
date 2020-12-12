@@ -525,7 +525,7 @@ ipcMain.on('sf_orgProfiles', (event, args) => {
       consoleWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
         channel: 'Error',
-        message: `Error Listing Error: ${err}`,
+        message: `Profile Listing Error: ${err}`,
       });
       return true;
     }
@@ -559,7 +559,7 @@ ipcMain.on('sf_orgPermSets', (event, args) => {
       consoleWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
         channel: 'Error',
-        message: `Error Listing Error: ${err}`,
+        message: `PermSet Listing Error: ${err}`,
       });
       return true;
     }
@@ -571,6 +571,79 @@ ipcMain.on('sf_orgPermSets', (event, args) => {
       response: result,
       limitInfo: conn.limitInfo,
       request: args,
+    });
+    return true;
+  });
+});
+
+// Fetch org Permission Set Details
+ipcMain.on('sf_orgPermSetDetail', (event, args) => {
+  const conn = new jsforce.Connection(sfConnections[args.org]);
+
+  // Get the details of the Permission Sets for this org, then query the requested set.
+  conn.sobject('PermissionSet').describe((err, result) => {
+    if (err) {
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Profile Detail Lookup Failed: unable to describe permissions sets',
+        response: `${err}`,
+        limitInfo: conn.limitInfo,
+        request: args,
+      });
+
+      consoleWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Error',
+        message: `Detail Lookup Failed on Describing Permission Sets: ${err}`,
+      });
+      return true;
+    }
+
+    // Built a unique list of field names to use in query in preferred order.
+    const fieldNames = [
+      'Id',
+      'Name',
+      'Label',
+      'IsCustom',
+      'IsOwnedByProfile',
+      'Profile.Name',
+      'Description',
+    ];
+    for (let i = 0; i < result.fields.length; i += 1) {
+      if (!fieldNames.includes(result.fields[i].name)) {
+        fieldNames.push(result.fields[i].name);
+      }
+    }
+
+    const permSetQuery = `SELECT ${fieldNames.join(', ')} FROM PermissionSet WHERE Name = '${args.org_permset_detail_name}' ORDER BY IsOwnedByProfile, IsCustom DESC`;
+
+    conn.query(permSetQuery, (error, detail) => {
+      if (error) {
+        mainWindow.webContents.send('response_generic', {
+          status: false,
+          message: 'Permission Set Detail Lookup Failed',
+          response: `${error}`,
+          limitInfo: conn.limitInfo,
+          request: args,
+        });
+
+        consoleWindow.webContents.send('log_message', {
+          sender: event.sender.getTitle(),
+          channel: 'Error',
+          message: `Permission Set Detail Lookup Error: ${error}`,
+        });
+        return true;
+      }
+
+      // Send records back to the interface.
+      mainWindow.webContents.send('response_permset_detail', {
+        status: true,
+        message: 'Permission Set Details Complete',
+        response: detail,
+        limitInfo: conn.limitInfo,
+        request: args,
+      });
+      return true;
     });
     return true;
   });

@@ -496,6 +496,44 @@ const displayOrgLimits = (limitData) => {
   resultsTable.appendChild(tBody);
 };
 
+const displayPermSetList = (data) => {
+  const cleanedData = data;
+  // Need to extract the Profile name, when present.
+  for (let i = 0; i < data.records.length; i += 1) {
+    if (data.records[i].Profile != null) {
+      cleanedData.records[i].Profile = data.records[i].Profile.Name;
+    }
+  }
+  refreshResponseTable(cleanedData, false);
+
+  // Correct the displayed information.
+  document.getElementById('results-summary-count').innerText = `This Org has ${data.totalSize} permission sets`;
+
+  // Add a column of buttons to get more details about the set.
+  const resultsTable = document.querySelector('#results-table');
+  let buttonCell;
+  let row;
+  for (let i = 0; i < resultsTable.rows.length; i += 1) {
+    row = resultsTable.rows[i];
+    if (i === 0) {
+      generateTableHeader(row, '', 'col', 0);
+    } else {
+      buttonCell = document.createElement('button');
+      buttonCell.innerHTML = 'Details';
+      buttonCell.classList.add('permset-detail-button');
+      buttonCell.dataset.permSetName = data.records[i - 1].Name;
+      generateTableCell(row, buttonCell, false, 0);
+    }
+  }
+  // Add click listener for all the new buttons.
+  Array.from(document.getElementsByClassName('permset-detail-button')).forEach((element) => {
+    element.addEventListener('click', () => {
+      const parameters = { org_permset_detail_name: element.dataset.permSetName };
+      window.api.send('sf_orgPermSetDetail', parameters);
+    });
+  });
+};
+
 // ===== Response handlers from IPC Messages to render context ======
 // Login response.
 window.api.receive('response_login', (data) => {
@@ -586,39 +624,21 @@ window.api.receive('reponnse_org_limits', (data) => {
 
 // Permission Set Listing Response. Print the results in a table, offer links to details.
 window.api.receive('response_permset_list', (data) => {
+  document.getElementById('results-table-wrapper').style.display = 'none';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'block';
+  displayRawResponse(data);
   if (data.status) {
-    displayRawResponse(data);
-    const cleanedData = data.response;
-    // Need to extract the Profile name, when present.
-    for (let i = 0; i < data.response.records.length; i += 1) {
-      if (data.response.records[i].Profile != null) {
-        cleanedData.records[i].Profile = data.response.records[i].Profile.Name;
-      }
-    }
-    refreshResponseTable(data.response, false);
+    displayPermSetList(data.response);
+  }
+});
 
-    // Correct the displayed information.
-    document.getElementById('results-summary-count').innerText = `This Org has ${data.response.totalSize} permission sets`;
-
-    // Add a column of buttons to get more details about the set.
-    const resultsTable = document.querySelector('#results-table');
-    let buttonCell;
-    let row;
-    for (let i = 0; i < resultsTable.rows.length; i += 1) {
-      row = resultsTable.rows[i];
-      if (i === 0) {
-        generateTableHeader(row, '', 'col', 0);
-      } else {
-        buttonCell = document.createElement('button');
-        buttonCell.innerHTML = 'Details';
-        buttonCell.classList.add('permset-detail-button');
-        buttonCell.dataset.permSetName = data.response.records[i - 1].Name;
-        generateTableCell(row, buttonCell, false, 0);
-      }
-    }
-    // Add click listener for all the new buttons
-  } else {
-    displayRawResponse(data.message);
+// Permission Set Listing Response. Print the results in a table, offer links to details.
+window.api.receive('response_permset_detail', (data) => {
+  document.getElementById('results-table-wrapper').style.display = 'none';
+  document.getElementById('results-object-viewer-wrapper').style.display = 'block';
+  displayRawResponse(data);
+  if (data.status) {
+    refreshObjectDisplay(data);
   }
 });
 
