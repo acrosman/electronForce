@@ -1,5 +1,6 @@
 // Preload script.
-const { contextBridge, ipcRenderer, remote } = require('electron');  // eslint-disable-line
+const { contextBridge, ipcRenderer } = require('electron'); // eslint-disable-line
+const { handlers } = require('../src/electronForce.js');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object.
@@ -7,22 +8,8 @@ const { contextBridge, ipcRenderer, remote } = require('electron');  // eslint-d
 contextBridge.exposeInMainWorld(
   'api', {
     send: (channel, data) => {
-      // List channels to allow.
-      const validChannels = [
-        'eforce_send_log',
-        'sf_login',
-        'sf_logout',
-        'sf_query',
-        'sf_search',
-        'sf_describe',
-        'sf_orgExplore',
-        'sf_describeGlobal',
-        'sf_orgLimits',
-        'sf_orgProfiles',
-        'sf_orgPermSets',
-        'sf_orgPermSetDetail',
-        'sf_owds',
-      ];
+      // The electronForce handlers are the list of valid channels.
+      const validChannels = Object.getOwnPropertyNames(handlers);
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
       }
