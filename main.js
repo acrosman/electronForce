@@ -18,6 +18,9 @@ if (isDev) {
 const path = require('path');
 const url = require('url');
 
+// Import the functions that we can use in the render processes.
+const electronForce = require('./src/electronForce');
+
 // Get rid of the deprecated default.
 app.allowRendererProcessReuse = true;
 
@@ -32,7 +35,7 @@ let consoleWindow;
 const sfConnections = {};
 
 // Create the main application window.
-function createWindow() {
+function createMainWindow() {
   const display = electron.screen.getPrimaryDisplay();
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -57,6 +60,9 @@ function createWindow() {
     protocol: 'file:',
     slashes: true,
   }));
+
+  // Attach to ElectronForce handlers
+  electronForce.setwindow('main', mainWindow);
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
@@ -88,6 +94,9 @@ function createLoggingConsole() {
     slashes: true,
   }));
 
+  // Connect to ElectronForce.
+  electronForce.setwindow('console', consoleWindow);
+
   // Emitted when the window is closed.
   consoleWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
@@ -100,7 +109,7 @@ function createLoggingConsole() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', createMainWindow);
 app.on('ready', createLoggingConsole);
 
 // Quit when all windows are closed.
@@ -145,7 +154,7 @@ app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
-    createWindow();
+    createMainWindow();
     createLoggingConsole();
   }
 });
@@ -155,68 +164,7 @@ app.on('activate', () => {
 //  do it nicely.
 
 // Handle Salesforce Login
-ipcMain.on('sf_login', (event, args) => {
-  const conn = new jsforce.Connection({
-    // you can change loginUrl to connect to sandbox or prerelease env.
-    loginUrl: args.url,
-  });
-
-  let { password } = args;
-  if (args.token !== '') {
-    password = `${password}${args.token}`;
-  }
-
-  conn.login(args.username, password, (err, userInfo) => {
-    // Since we send the args back to the interface, it's a good idea
-    // to remove the security information.
-    args.password = '';
-    args.token = '';
-
-    if (err) {
-      consoleWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Error',
-        message: `Login Failed ${err}`,
-      });
-
-      mainWindow.webContents.send('sfShowOrgId', {
-        status: false,
-        message: 'Login Failed',
-        response: err,
-        limitInfo: conn.limitInfo,
-        request: args,
-      });
-      return true;
-    }
-    // Now you can get the access token and instance URL information.
-    // Save them to establish connection next time.
-    consoleWindow.webContents.send('log_message', {
-      sender: event.sender.getTitle(),
-      channel: 'Info',
-      message: `New Connection to ${conn.instanceUrl} with Access Token ${conn.accessToken}`,
-    });
-    consoleWindow.webContents.send('log_message', {
-      sender: event.sender.getTitle(),
-      channel: 'Info',
-      message: `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
-    });
-
-    // Save the next connection in the global storage.
-    sfConnections[userInfo.organizationId] = {
-      instanceUrl: conn.instanceUrl,
-      accessToken: conn.accessToken,
-    };
-
-    mainWindow.webContents.send('response_login', {
-      status: true,
-      message: 'Login Successful',
-      response: userInfo,
-      limitInfo: conn.limitInfo,
-      request: args,
-    });
-    return true;
-  });
-});
+ipcMain.on('sf_login', electronForce.handlers.sf_login);
 
 /**
  * Logout of a Salesforce org.
