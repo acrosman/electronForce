@@ -28,11 +28,6 @@ app.allowRendererProcessReuse = true;
 let mainWindow;
 let consoleWindow;
 
-// A global collection of the various SF Org connections currently open in the
-// app.
-// @TODOL: find a better way to do this that isn't a global.
-const sfConnections = {};
-
 // Create the main application window.
 function createMainWindow() {
   const display = electron.screen.getPrimaryDisplay();
