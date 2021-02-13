@@ -78,7 +78,11 @@ function createLoggingConsole() {
     frame: true,
     webPreferences: {
       nodeIntegration: false, // Disable nodeIntegration for security.
+      nodeIntegrationInWorker: false,
+      nodeIntegrationInSubFrames: false,
       contextIsolation: true, // Enabling contextIsolation for security.
+      worldSafeExecuteJavaScript: true, // https://github.com/electron/electron/pull/24712
+      enableRemoteModule: false, // Turn off remote to avoid temptation.
       preload: path.join(app.getAppPath(), 'app/consolePreload.js'),
     },
   });
