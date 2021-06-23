@@ -106,6 +106,83 @@ const object2ul = (data) => {
 };
 
 /**
+ * Displays an object as JSON in the raw response section of the interface.
+ * @param {Object} responseObject The JSForce response object.
+ */
+const displayRawResponse = (responseObject) => {
+  $('#raw-response').jsonViewer(responseObject, {
+    collapsed: true,
+    rootCollapsable: false,
+    withQuotes: true,
+    withLinks: true,
+  });
+};
+
+// Escapes HTML tags that may be headed to the log messages.
+const escapeHTML = (html) => {
+  const escape = document.createElement('textarea');
+  escape.textContent = html;
+  return escape.innerHTML;
+};
+
+/**
+ * Log a message to the console.
+ * @param {String} context The part of the system that generated the message.
+ * @param {String} importance The level of importance of the message.
+ * @param {String} message The message to display.
+ * @param {*} data Raw data to display in JSON viewer.
+ */
+function logMessage(context, importance, message, data) {
+  // Create elements for display.
+  const logTable = document.getElementById('consoleMessageTable');
+  const row = logTable.insertRow(1);
+  const mesImportance = document.createElement('td');
+  const mesContext = document.createElement('td');
+  const mesText = document.createElement('td');
+  const mesData = document.createElement('td');
+
+  // Add Classes.
+  mesText.setAttribute('class', 'console-message');
+  mesData.setAttribute('class', 'console-raw-data');
+
+  // Set the row highlights as needed.
+  switch (importance.toLowerCase()) {
+    case 'error':
+      row.className += 'table-danger';
+      break;
+    case 'warning':
+    case 'warn':
+      row.className += 'table-warning';
+      break;
+    case 'success':
+      row.className += 'table-success';
+      break;
+    default:
+      break;
+  }
+
+  // Add Text
+  mesContext.innerHTML = context;
+  mesImportance.innerHTML = importance;
+  mesText.innerHTML = escapeHTML(message);
+
+  // Attach Elements
+  row.appendChild(mesImportance);
+  row.appendChild(mesContext);
+  row.appendChild(mesText);
+  row.appendChild(mesData);
+
+  if (data) {
+    displayRawResponse(data);
+    $('#consoleMessageTable :last-child td.console-raw-data').jsonViewer(data, {
+      collapsed: true,
+      rootCollapsable: false,
+      withQuotes: true,
+      withLinks: true,
+    });
+  }
+}
+/**
  * Attaches the DOM element for a table header element attached an existing table.
  * @param {Object} headerRow The DOM element to attach the new header to.
  * @param {String} labelText The text for the element.
@@ -145,19 +222,6 @@ const generateTableCell = (tableRow, content, isText = true, position = -1) => {
   } else {
     tableRow.insertBefore(cellNode, tableRow.children[position]);
   }
-};
-
-/**
- * Displays an object as JSON in the raw response section of the interface.
- * @param {Object} responseObject The JSForce response object.
- */
-const displayRawResponse = (responseObject) => {
-  $('#raw-response').jsonViewer(responseObject, {
-    collapsed: true,
-    rootCollapsable: false,
-    withQuotes: true,
-    withLinks: true,
-  });
 };
 
 /**
@@ -640,6 +704,11 @@ window.api.receive('response_permset_detail', (data) => {
   if (data.status) {
     refreshObjectDisplay(data);
   }
+});
+
+// Process a log message.
+window.api.receive('log_message', (data) => {
+  logMessage(data.sender, data.channel, data.message);
 });
 
 // ========= Messages to the main process ===============
