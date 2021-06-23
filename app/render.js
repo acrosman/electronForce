@@ -541,7 +541,7 @@ window.api.receive('response_login', (data) => {
     // Add the new connection to the list of options.
     const opt = document.createElement('option');
     opt.value = data.response.organizationId;
-    opt.innerHTML = document.getElementById('login-username').value;
+    opt.innerHTML = data.request.username;
     opt.id = `sforg-${opt.value}`;
     document.getElementById('active-org').appendChild(opt);
 
