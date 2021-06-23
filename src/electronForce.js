@@ -2,18 +2,9 @@ const jsforce = require('jsforce');
 
 const sfConnections = {};
 let mainWindow = null;
-let consoleWindow = null;
 
-const setwindow = (windowName, window) => {
-  switch (windowName) {
-    case 'console':
-      consoleWindow = window;
-      break;
-    case 'main':
-    default:
-      mainWindow = window;
-      break;
-  }
+const setwindow = (window) => {
+  mainWindow = window;
 };
 
 const handlers = {
@@ -36,7 +27,7 @@ const handlers = {
       args.token = '';
 
       if (err) {
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Login Failed ${err}`,
@@ -53,12 +44,12 @@ const handlers = {
       }
       // Now you can get the access token and instance URL information.
       // Save them to establish connection next time.
-      consoleWindow.webContents.send('log_message', {
+      mainWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
         channel: 'Info',
         message: `New Connection to ${conn.instanceUrl} with Access Token ${conn.accessToken}`,
       });
-      consoleWindow.webContents.send('log_message', {
+      mainWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
         channel: 'Info',
         message: `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
@@ -92,7 +83,7 @@ const handlers = {
           limitInfo: conn.limitInfo,
           request: args,
         });
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Logout Failed ${err}`,
@@ -123,7 +114,7 @@ const handlers = {
           limitInfo: conn.limitInfo,
           request: args,
         });
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Query Failed ${err}`,
@@ -153,7 +144,7 @@ const handlers = {
           limitInfo: conn.limitInfo,
           request: args,
         });
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Search Failed ${err}`,
@@ -191,7 +182,7 @@ const handlers = {
           request: args,
         });
 
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Describe Failed ${err}`,
@@ -223,7 +214,7 @@ const handlers = {
           request: args,
         });
 
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Describe Global Failed ${err}`,
@@ -257,7 +248,7 @@ const handlers = {
           request: args,
         });
 
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Describe Org in fetch process failed ${err}`,
@@ -288,7 +279,7 @@ const handlers = {
             request: args,
           });
 
-          consoleWindow.webContents.send('log_message', {
+          mainWindow.webContents.send('log_message', {
             sender: event.sender.getTitle(),
             channel: 'Error',
             message: `Org Fetch Failed ${qErr}`,
@@ -311,7 +302,7 @@ const handlers = {
   },
   // Send a logging message related to another render thread.
   eforce_send_log: (event, args) => {
-    consoleWindow.webContents.send('log_message', {
+    mainWindow.webContents.send('log_message', {
       sender: event.sender.getTitle(),
       channel: args.channel,
       message: args.message,
@@ -331,7 +322,7 @@ const handlers = {
           request: args,
         });
 
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Limit Check Error: ${err}`,
@@ -364,7 +355,7 @@ const handlers = {
           request: args,
         });
 
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Profile Listing Error: ${err}`,
@@ -397,7 +388,7 @@ const handlers = {
           request: args,
         });
 
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `PermSet Listing Error: ${err}`,
@@ -431,7 +422,7 @@ const handlers = {
           request: args,
         });
 
-        consoleWindow.webContents.send('log_message', {
+        mainWindow.webContents.send('log_message', {
           sender: event.sender.getTitle(),
           channel: 'Error',
           message: `Detail Lookup Failed on Describing Permission Sets: ${err}`,
@@ -467,7 +458,7 @@ const handlers = {
             request: args,
           });
 
-          consoleWindow.webContents.send('log_message', {
+          mainWindow.webContents.send('log_message', {
             sender: event.sender.getTitle(),
             channel: 'Error',
             message: `Permission Set Detail Lookup Error: ${error}`,
