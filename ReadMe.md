@@ -1,3 +1,5 @@
+![Lint Status](https://github.com/acrosman/electronForce/actions/workflows/lint.yml/badge.svg) ![CodeQL Status](https://github.com/acrosman/electronForce/actions/workflows/codeql-analysis.yml/badge.svg)
+
 # ElectronForce
 
 ElectronForce is an Electron based Salesforce Org exploration tool using the [JSForce](https://jsforce.github.io/) library to leverage the Salesforce APIs. Currently it allows you to query and search data, describe objects, review the Organization object, and list all objects in the org.
