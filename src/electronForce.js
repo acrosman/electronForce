@@ -42,13 +42,7 @@ const handlers = {
         });
         return true;
       }
-      // Now you can get the access token and instance URL information.
       // Save them to establish connection next time.
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `New Connection to ${conn.instanceUrl} with Access Token ${conn.accessToken}`,
-      });
       mainWindow.webContents.send('log_message', {
         sender: event.sender.getTitle(),
         channel: 'Info',
@@ -90,6 +84,12 @@ const handlers = {
         });
         return true;
       }
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: `Logged out of ${args.org}`,
+      });
+
       // now the session has been expired.
       mainWindow.webContents.send('response_logout', {
         status: true,
@@ -121,6 +121,13 @@ const handlers = {
         });
         return true;
       }
+
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: `Ran Query: ${args.rest_api_soql_text}`,
+      });
+
       // Send records back to the interface.
       mainWindow.webContents.send('response_query', {
         status: true,
@@ -151,6 +158,12 @@ const handlers = {
         });
         return true;
       }
+
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: `Ran Search: ${args.rest_api_sosl_text}`,
+      });
 
       // Re-package results for easy display.
       const adjustedResult = {
@@ -190,6 +203,12 @@ const handlers = {
         return true;
       }
 
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: `Describe of ${args.rest_api_describe_text} Successful`,
+      });
+
       // Send records back to the interface.
       mainWindow.webContents.send('response_describe', {
         status: true,
@@ -221,6 +240,12 @@ const handlers = {
         });
         return true;
       }
+
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: 'Describe Global Successful',
+      });
 
       // Send records back to the interface.
       mainWindow.webContents.send('response_describe_global', {
@@ -287,6 +312,12 @@ const handlers = {
           return true;
         }
 
+        mainWindow.webContents.send('log_message', {
+          sender: event.sender.getTitle(),
+          channel: 'Info',
+          message: `Fetched Org Details with ${orgQuery}`,
+        });
+
         // Send records back to the interface.
         mainWindow.webContents.send('response_org_object_display', {
           status: true,
@@ -299,15 +330,6 @@ const handlers = {
       });
       return true;
     });
-  },
-  // Send a logging message related to another render thread.
-  eforce_send_log: (event, args) => {
-    mainWindow.webContents.send('log_message', {
-      sender: event.sender.getTitle(),
-      channel: args.channel,
-      message: args.message,
-    });
-    return true;
   },
   // Report on current org limits.
   sf_orgLimits: (event, args) => {
@@ -329,6 +351,12 @@ const handlers = {
         });
         return true;
       }
+
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: 'Fetched Org limits',
+      });
 
       // Send records back to the interface.
       mainWindow.webContents.send('reponnse_org_limits', {
@@ -363,6 +391,12 @@ const handlers = {
         return true;
       }
 
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: `Fetched Profile listing with: ${profileQuery}`,
+      });
+
       // Send records back to the interface.
       mainWindow.webContents.send('response_query', {
         status: true,
@@ -376,13 +410,13 @@ const handlers = {
   },
   // Fetch org Permission Sets
   sf_orgPermSets: (event, args) => {
-    const profileQuery = 'SELECT Id, Name, Label, Description, IsCustom, IsOwnedByProfile, Profile.Name FROM PermissionSet ORDER BY IsOwnedByProfile, IsCustom DESC';
+    const psQuery = 'SELECT Id, Name, Label, Description, IsCustom, IsOwnedByProfile, Profile.Name FROM PermissionSet ORDER BY IsOwnedByProfile, IsCustom DESC';
     const conn = new jsforce.Connection(sfConnections[args.org]);
-    conn.query(profileQuery, (err, result) => {
+    conn.query(psQuery, (err, result) => {
       if (err) {
         mainWindow.webContents.send('response_generic', {
           status: false,
-          message: 'Profile Listing Failed',
+          message: 'PermSet Listing Failed',
           response: `${err}`,
           limitInfo: conn.limitInfo,
           request: args,
@@ -395,6 +429,12 @@ const handlers = {
         });
         return true;
       }
+
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: `Fetched Permissions with: ${psQuery}`,
+      });
 
       // Send records back to the interface.
       mainWindow.webContents.send('response_permset_list', {
@@ -429,6 +469,12 @@ const handlers = {
         });
         return true;
       }
+
+      mainWindow.webContents.send('log_message', {
+        sender: event.sender.getTitle(),
+        channel: 'Info',
+        message: 'Fetched Permission Set Describe',
+      });
 
       // Built a unique list of field names to use in query in preferred order.
       const fieldNames = [
@@ -465,6 +511,12 @@ const handlers = {
           });
           return true;
         }
+
+        mainWindow.webContents.send('log_message', {
+          sender: event.sender.getTitle(),
+          channel: 'Info',
+          message: `Fetched Permission Set details with: ${permSetQuery}`,
+        });
 
         // Send records back to the interface.
         mainWindow.webContents.send('response_permset_detail', {
