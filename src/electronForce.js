@@ -42,7 +42,7 @@ const handlers = {
           message: `Login Failed ${err}`,
         });
 
-        mainWindow.webContents.send('sfShowOrgId', {
+        mainWindow.webContents.send('response_generic', {
           status: false,
           message: 'Login Failed',
           response: err,
