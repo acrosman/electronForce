@@ -9,11 +9,12 @@ const setWindow = (window) => {
   mainWindow = window;
 };
 
-const logMessage = (channel, message) => {
-  newMessage = {
+const logMessage = (channel, message, data) => {
+  const newMessage = {
     timestamp: Date.Now(),
     channel,
     message,
+    data,
   };
 
   logMessages.push(newMessage);
@@ -55,15 +56,15 @@ const handlers = {
         });
         return true;
       }
-      // Save them to establish connection next time.
-      logMessage('Info', `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`);
-
       // Save the next connection in the global storage.
       sfConnections[userInfo.organizationId] = {
         instanceUrl: conn.instanceUrl,
         accessToken: conn.accessToken,
         version: '51.0',
       };
+
+      // Record the connection in the log.
+      logMessage('Info', `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`);
 
       mainWindow.webContents.send('response_login', {
         status: true,
