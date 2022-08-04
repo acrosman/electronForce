@@ -50,7 +50,7 @@ function createMainWindow() {
   mainWindow.loadURL(`file://${__dirname}/app/index.html`);
 
   // Attach to ElectronForce handlers.
-  electronForce.setwindow(mainWindow);
+  electronForce.setWindow(mainWindow);
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {

@@ -1,13 +1,31 @@
+const { Date } = require('jsforce');
 const jsforce = require('jsforce');
 
 const sfConnections = {};
+const logMessages = [];
 let mainWindow = null;
 
-const setwindow = (window) => {
+const setWindow = (window) => {
   mainWindow = window;
 };
 
+const logMessage = (channel, message) => {
+  newMessage = {
+    timestamp: Date.Now(),
+    channel,
+    message,
+  };
+
+  logMessages.push(newMessage);
+};
+
 const handlers = {
+  get_log_messages: (count, offset) => {
+    mainWindow.webContents.send('log_messages', {
+      messages: logMessages.slice(offset, offset + count),
+      totalCount: logMessages.length,
+    });
+  },
   // Login to an org using password authentication.
   sf_login: (event, args) => {
     const conn = new jsforce.Connection({
@@ -27,12 +45,7 @@ const handlers = {
       args.token = '';
 
       if (err) {
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Login Failed ${err}`,
-        });
-
+        logMessage('Error', `Login Failed ${err}`);
         mainWindow.webContents.send('response_generic', {
           status: false,
           message: 'Login Failed',
@@ -43,11 +56,7 @@ const handlers = {
         return true;
       }
       // Save them to establish connection next time.
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`,
-      });
+      logMessage('Info', `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`);
 
       // Save the next connection in the global storage.
       sfConnections[userInfo.organizationId] = {
@@ -78,18 +87,10 @@ const handlers = {
           limitInfo: conn.limitInfo,
           request: args,
         });
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Logout Failed ${err}`,
-        });
+        logMessage('Error', `Logout Failed ${err}`);
         return true;
       }
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Logged out of ${args.org}`,
-      });
+      logMessage('Info', `Logged out of ${args.org}`);
 
       // now the session has been expired.
       mainWindow.webContents.send('response_logout', {
@@ -115,19 +116,11 @@ const handlers = {
           limitInfo: conn.limitInfo,
           request: args,
         });
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Query Failed ${err}`,
-        });
+        logMessage('Error', `Query Failed ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Ran Query: ${args.rest_api_soql_text}`,
-      });
+      logMessage('Info', `Ran Query: ${args.rest_api_soql_text}`);
 
       // Send records back to the interface.
       mainWindow.webContents.send('response_query', {
@@ -152,19 +145,11 @@ const handlers = {
           limitInfo: conn.limitInfo,
           request: args,
         });
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Search Failed ${err}`,
-        });
+        logMessage('Error', `Search Failed ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Ran Search: ${args.rest_api_sosl_text}`,
-      });
+      logMessage('Info', `Ran Search: ${args.rest_api_sosl_text}`);
 
       // Re-package results for easy display.
       const adjustedResult = {
@@ -196,19 +181,11 @@ const handlers = {
           request: args,
         });
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Describe Failed ${err}`,
-        });
+        logMessage('Error', `Describe Failed ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Describe of ${args.rest_api_describe_text} Successful`,
-      });
+      logMessage('Info', `Describe of ${args.rest_api_describe_text} Successful`);
 
       // Send records back to the interface.
       mainWindow.webContents.send('response_describe', {
@@ -234,19 +211,11 @@ const handlers = {
           request: args,
         });
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Describe Global Failed ${err}`,
-        });
+        logMessage('Error', `Global Describe Failed ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: 'Describe Global Successful',
-      });
+      logMessage('Info', 'Global Describe Successful');
 
       // Send records back to the interface.
       mainWindow.webContents.send('response_describe_global', {
@@ -274,11 +243,7 @@ const handlers = {
           request: args,
         });
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Describe Org in fetch process failed ${err}`,
-        });
+        logMessage('Error', `Describe Org in fetch process failed ${err}`);
         return true;
       }
 
@@ -305,19 +270,11 @@ const handlers = {
             request: args,
           });
 
-          mainWindow.webContents.send('log_message', {
-            sender: event.sender.getTitle(),
-            channel: 'Error',
-            message: `Org Fetch Failed ${qErr}`,
-          });
+          logMessage('Error', `Org Fetch Failed ${qErr}`);
           return true;
         }
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Info',
-          message: `Fetched Org Details with ${orgQuery}`,
-        });
+        logMessage('Info', `Fetched Org Details with ${orgQuery}`);
 
         // Send records back to the interface.
         mainWindow.webContents.send('response_org_object_display', {
@@ -345,19 +302,11 @@ const handlers = {
           request: args,
         });
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Limit Check Error: ${err}`,
-        });
+        logMessage('Error', `Limit Check Error: ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: 'Fetched Org limits',
-      });
+      logMessage('Info', 'Fetched Org limits');
 
       // Send records back to the interface.
       mainWindow.webContents.send('reponnse_org_limits', {
@@ -384,19 +333,11 @@ const handlers = {
           request: args,
         });
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Profile Listing Error: ${err}`,
-        });
+        logMessage('Error', `Profile Listing Error: ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Fetched Profile listing with: ${profileQuery}`,
-      });
+      logMessage('Info', `Fetched Profile listing with: ${profileQuery}`);
 
       // Send records back to the interface.
       mainWindow.webContents.send('response_query', {
@@ -423,19 +364,11 @@ const handlers = {
           request: args,
         });
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `PermSet Listing Error: ${err}`,
-        });
+        logMessage('Error', `PermSet Listing Error: ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: `Fetched Permissions with: ${psQuery}`,
-      });
+      logMessage('Info', `Fetched Permissions with: ${psQuery}`);
 
       // Send records back to the interface.
       mainWindow.webContents.send('response_permset_list', {
@@ -463,19 +396,11 @@ const handlers = {
           request: args,
         });
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Error',
-          message: `Detail Lookup Failed on Describing Permission Sets: ${err}`,
-        });
+        logMessage('Error', `Detail Lookup Failed on Describing Permission Sets: ${err}`);
         return true;
       }
 
-      mainWindow.webContents.send('log_message', {
-        sender: event.sender.getTitle(),
-        channel: 'Info',
-        message: 'Fetched Permission Set Describe',
-      });
+      logMessage('Info', 'Fetched Permission Set Describe');
 
       // Built a unique list of field names to use in query in preferred order.
       const fieldNames = [
@@ -505,19 +430,11 @@ const handlers = {
             request: args,
           });
 
-          mainWindow.webContents.send('log_message', {
-            sender: event.sender.getTitle(),
-            channel: 'Error',
-            message: `Permission Set Detail Lookup Error: ${error}`,
-          });
+          logMessage('Error', `Permission Set Detail Lookup Error: ${error}`);
           return true;
         }
 
-        mainWindow.webContents.send('log_message', {
-          sender: event.sender.getTitle(),
-          channel: 'Info',
-          message: `Fetched Permission Set details with: ${permSetQuery}`,
-        });
+        logMessage('Info', `Fetched Permission Set details with: ${permSetQuery}`);
 
         // Send records back to the interface.
         mainWindow.webContents.send('response_permset_detail', {
@@ -535,4 +452,4 @@ const handlers = {
 };
 
 exports.handlers = handlers;
-exports.setwindow = setwindow;
+exports.setWindow = setWindow;
