@@ -33,7 +33,7 @@ const handlers = {
           message: `Login Failed ${err}`,
         });
 
-        mainWindow.webContents.send('sfShowOrgId', {
+        mainWindow.webContents.send('response_generic', {
           status: false,
           message: 'Login Failed',
           response: err,
@@ -53,6 +53,7 @@ const handlers = {
       sfConnections[userInfo.organizationId] = {
         instanceUrl: conn.instanceUrl,
         accessToken: conn.accessToken,
+        version: '51.0',
       };
 
       mainWindow.webContents.send('response_login', {
