@@ -17,7 +17,7 @@ const logMessage = (channel, message, data) => {
     data,
   };
 
-  logMessages.push(newMessage);
+  logMessages.unshift(newMessage);
 };
 
 const handlers = {
