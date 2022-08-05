@@ -83,10 +83,18 @@ $.when($.ready).then(() => {
     while (messageTable.rows.length > 1) {
       messageTable.removeChild(messageTable.lastChild);
     }
+    document.getElementById('log-console-load-more').dataset.count = 0;
 
     // Load first 50
     window.api.send('get_log_messages', { offset: 0, count: 50 });
-  })
+  });
+
+  // Setup load more action handler for log messages. Unlike the listeners above,
+  // that all call Salesforce, this is just trying to pull more log messages.
+  $('#log-console-load-more').on('click', (event) => {
+    event.preventDefault();
+    window.api.send('get_log_messages', { offset: event.target.dataset.count, count: 50 });
+  });
 });
 
 // ============= Helpers ==============
@@ -191,6 +199,10 @@ function displayMessages(messageList) {
   messageList.forEach((message) => {
     showLogMessage(message.timestamp, message.channel, message.message)
   });
+
+  let currentCount = parseInt(document.getElementById('log-console-load-more').dataset.count, 10);
+  currentCount += messageList.length;
+  document.getElementById('log-console-load-more').dataset.count = currentCount;
 }
 
 /**
