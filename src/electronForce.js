@@ -1,4 +1,3 @@
-const { Date } = require('jsforce');
 const jsforce = require('jsforce');
 
 const sfConnections = {};
@@ -10,8 +9,9 @@ const setWindow = (window) => {
 };
 
 const logMessage = (channel, message, data) => {
+  const ts = Date.now();
   const newMessage = {
-    timestamp: Date.Now(),
+    timestamp: ts,
     channel,
     message,
     data,
@@ -21,7 +21,8 @@ const logMessage = (channel, message, data) => {
 };
 
 const handlers = {
-  get_log_messages: (count, offset) => {
+  get_log_messages: (event, args) => {
+    const { offset, count } = args;
     mainWindow.webContents.send('log_messages', {
       messages: logMessages.slice(offset, offset + count),
       totalCount: logMessages.length,

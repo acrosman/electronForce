@@ -74,6 +74,19 @@ $.when($.ready).then(() => {
         }
       });
   });
+
+  // Setup event listener for when the console modal opens,
+  // pull in the most recent 50 messages.
+  $('#consoleModal').on('show.bs.modal', (event) => {
+    // Clear existing messages.
+    const messageTable = document.querySelector('#consoleMessageTable');
+    while (messageTable.rows.length > 1) {
+      messageTable.removeChild(messageTable.lastChild);
+    }
+
+    // Load first 50
+    window.api.send('get_log_messages', { offset: 0, count: 50 });
+  })
 });
 
 // ============= Helpers ==============
@@ -127,29 +140,27 @@ const escapeHTML = (html) => {
 
 /**
  * Log a message to the console.
- * @param {String} context The part of the system that generated the message.
- * @param {String} importance The level of importance of the message.
+ * @param {Date} timestamp The part of the system that generated the message.
+ * @param {String} channel One of 'Error', 'Info', 'Success', 'Warn', and 'Debug'.
  * @param {String} message The message to display.
- * @param {*} data Raw data to display in JSON viewer.
  */
-function logMessage(context, importance, message, data) {
+function showLogMessage(timestamp, channel, message) {
   // Create elements for display.
   const logTable = document.getElementById('consoleMessageTable');
-  const row = logTable.insertRow(1);
+  const row = logTable.insertRow();
   const mesImportance = document.createElement('td');
   const mesContext = document.createElement('td');
   const mesText = document.createElement('td');
-  const mesData = document.createElement('td');
 
   // Add Classes.
   mesText.setAttribute('class', 'console-message');
-  mesData.setAttribute('class', 'console-raw-data');
 
   // Set the row highlights as needed.
-  switch (importance.toLowerCase()) {
+  switch (channel.toLowerCase()) {
     case 'error':
       row.className += 'table-danger';
       break;
+    case 'debug':
     case 'warning':
     case 'warn':
       row.className += 'table-warning';
@@ -157,31 +168,31 @@ function logMessage(context, importance, message, data) {
     case 'success':
       row.className += 'table-success';
       break;
-    default:
+    default: // This will handle info and any junk sent.
       break;
   }
 
   // Add Text
-  mesContext.innerHTML = context;
-  mesImportance.innerHTML = importance;
+  mesContext.innerHTML = new Date(timestamp).toLocaleString();
+  mesImportance.innerHTML = channel;
   mesText.innerHTML = escapeHTML(message);
 
   // Attach Elements
   row.appendChild(mesImportance);
   row.appendChild(mesContext);
   row.appendChild(mesText);
-  row.appendChild(mesData);
-
-  if (data) {
-    displayRawResponse(data);
-    $('#consoleMessageTable :last-child td.console-raw-data').jsonViewer(data, {
-      collapsed: true,
-      rootCollapsable: false,
-      withQuotes: true,
-      withLinks: true,
-    });
-  }
 }
+
+/**
+ * Display a list of messages pulled from the main thread.
+ * @param {Array} messageList
+ */
+function displayMessages(messageList) {
+  messageList.forEach((message) => {
+    showLogMessage(message.timestamp, message.channel, message.message)
+  });
+}
+
 /**
  * Attaches the DOM element for a table header element attached an existing table.
  * @param {Object} headerRow The DOM element to attach the new header to.
@@ -707,8 +718,8 @@ window.api.receive('response_permset_detail', (data) => {
 });
 
 // Process a log message.
-window.api.receive('log_message', (data) => {
-  logMessage(data.sender, data.channel, data.message);
+window.api.receive('log_messages', (data) => {
+  displayMessages(data.messages);
 });
 
 // ========= Messages to the main process ===============
