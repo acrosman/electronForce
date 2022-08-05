@@ -21,6 +21,7 @@ const logMessage = (channel, message, data) => {
 };
 
 const handlers = {
+  // Send a list of log messages to the main window.
   get_log_messages: (event, args) => {
     const { offset, count } = args;
     mainWindow.webContents.send('log_messages', {
