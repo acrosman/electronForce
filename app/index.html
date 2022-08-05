@@ -12,6 +12,36 @@
 </head>
 
 <body>
+    <div class="modal fade" id="consoleModal" tabindex="-1" aria-labelledby="consoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="consoleModalLabel">Message Console</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <table class="table table-hover" id="consoleMessageTable">
+                                <tr>
+                                    <th scope="col">Importance</th>
+                                    <th scope="col">Time Stamp</th>
+                                    <th scope="col">Message</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-count="0" id="log-console-load-more">Load
+                        More</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-4">
@@ -49,8 +79,8 @@
                                     <form>
                                         <div class="form-group">
                                             <label for="login-username">User Name</label>
-                                            <input type="text" id="login-username" class="form-control" aria-describedby="usernameHelp"
-                                                placeholder="Enter Salesforce Username">
+                                            <input type="text" id="login-username" class="form-control"
+                                                aria-describedby="usernameHelp" placeholder="Enter Salesforce Username">
                                             <small id="usernameHelp" class="form-text">Your Salesforce username must be
                                                 in the form of an email address.</small>
                                         </div>
@@ -60,7 +90,8 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="login-token">Security Token</label>
-                                            <input type="password" class="form-control" aria-describedby="tokenHelp" id="login-token">
+                                            <input type="password" class="form-control" aria-describedby="tokenHelp"
+                                                id="login-token">
                                             <small id="tokenHelp" class="form-text">Likely you will need your Saleforce
                                                 Security token. If you do not have it follow <a
                                                     href='https://help.salesforce.com/articleView?id=user_security_token.htm&type=5'>these
@@ -68,13 +99,15 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="login-url">Login URL</label>
-                                            <input type="url" id="login-url" class="form-control" value="https://login.salesforce.com">
+                                            <input type="url" id="login-url" class="form-control"
+                                                value="https://login.salesforce.com">
                                         </div>
                                     </form>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" id="login-trigger" data-dismiss="modal">Connect</button>
+                                    <button type="button" class="btn btn-primary" id="login-trigger"
+                                        data-dismiss="modal">Connect</button>
                                 </div>
                             </div>
                         </div>
@@ -85,6 +118,8 @@
                 <div class="card bg-default" id=raw-response-wrapper>
                     <h2>Last Response:</h2>
                     <pre id="raw-response" class="pre-scrollable"></pre>
+                    <button type="button" id="show-console" class="btn btn-info" value="Show Log Console"
+                        data-toggle="modal" data-target="#consoleModal">Show Log Console</button>
                 </div>
             </div>
         </div>
@@ -171,14 +206,16 @@
                     </div>
                     <div id="org-profiles">
                         <fieldset>
-                            <button type="button" id="org-profile-trigger" class="sf-api-trigger-button btn btn-success">
+                            <button type="button" id="org-profile-trigger"
+                                class="sf-api-trigger-button btn btn-success">
                                 Fetch Profiles
                             </button>
                         </fieldset>
                     </div>
                     <div id="org-permsets">
                         <fieldset>
-                            <button type="button" id="org-permsets-trigger" class="sf-api-trigger-button btn btn-success">
+                            <button type="button" id="org-permsets-trigger"
+                                class="sf-api-trigger-button btn btn-success">
                                 Fetch Permissions Sets
                             </button>
                         </fieldset>
@@ -189,14 +226,16 @@
                                 <label for="rest-api-describe-text">Enter Permission Set Name:</label>
                                 <input type="text" id="org-permset-detail-name" class="api-data-element form-control">
                             </div>
-                            <button type="button" id="org-permset-detail-trigger" class="sf-api-trigger-button btn btn-success">
+                            <button type="button" id="org-permset-detail-trigger"
+                                class="sf-api-trigger-button btn btn-success">
                                 Describe Object
                             </button>
                         </fieldset>
                     </div>
                     <div id="org-object-sharing">
                         <fieldset>
-                            <button type="button" id="org-object-sharing-trigger" class="sf-api-trigger-button btn btn-success">
+                            <button type="button" id="org-object-sharing-trigger"
+                                class="sf-api-trigger-button btn btn-success">
                                 Fetch OWDs
                             </button>
                         </fieldset>

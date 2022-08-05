@@ -74,6 +74,27 @@ $.when($.ready).then(() => {
         }
       });
   });
+
+  // Setup event listener for when the console modal opens,
+  // pull in the most recent 50 messages.
+  $('#consoleModal').on('show.bs.modal', (event) => {
+    // Clear existing messages.
+    const messageTable = document.querySelector('#consoleMessageTable');
+    while (messageTable.rows.length > 1) {
+      messageTable.removeChild(messageTable.lastChild);
+    }
+    document.getElementById('log-console-load-more').dataset.count = 0;
+
+    // Load first 50
+    window.api.send('get_log_messages', { offset: 0, count: 50 });
+  });
+
+  // Setup load more action handler for log messages. Unlike the listeners above,
+  // that all call Salesforce, this is just trying to pull more log messages.
+  $('#log-console-load-more').on('click', (event) => {
+    event.preventDefault();
+    window.api.send('get_log_messages', { offset: event.target.dataset.count, count: 50 });
+  });
 });
 
 // ============= Helpers ==============
@@ -104,6 +125,85 @@ const object2ul = (data) => {
 
   return ul;
 };
+
+/**
+ * Displays an object as JSON in the raw response section of the interface.
+ * @param {Object} responseObject The JSForce response object.
+ */
+const displayRawResponse = (responseObject) => {
+  $('#raw-response').jsonViewer(responseObject, {
+    collapsed: true,
+    rootCollapsable: false,
+    withQuotes: true,
+    withLinks: true,
+  });
+};
+
+// Escapes HTML tags that may be headed to the log messages.
+const escapeHTML = (html) => {
+  const escape = document.createElement('textarea');
+  escape.textContent = html;
+  return escape.innerHTML;
+};
+
+/**
+ * Log a message to the console.
+ * @param {Date} timestamp The part of the system that generated the message.
+ * @param {String} channel One of 'Error', 'Info', 'Success', 'Warn', and 'Debug'.
+ * @param {String} message The message to display.
+ */
+function showLogMessage(timestamp, channel, message) {
+  // Create elements for display.
+  const logTable = document.getElementById('consoleMessageTable');
+  const row = logTable.insertRow();
+  const mesImportance = document.createElement('td');
+  const mesContext = document.createElement('td');
+  const mesText = document.createElement('td');
+
+  // Add Classes.
+  mesText.setAttribute('class', 'console-message');
+
+  // Set the row highlights as needed.
+  switch (channel.toLowerCase()) {
+    case 'error':
+      row.className += 'table-danger';
+      break;
+    case 'debug':
+    case 'warning':
+    case 'warn':
+      row.className += 'table-warning';
+      break;
+    case 'success':
+      row.className += 'table-success';
+      break;
+    default: // This will handle info and any junk sent.
+      break;
+  }
+
+  // Add Text
+  mesContext.innerHTML = new Date(timestamp).toLocaleString();
+  mesImportance.innerHTML = channel;
+  mesText.innerHTML = escapeHTML(message);
+
+  // Attach Elements
+  row.appendChild(mesImportance);
+  row.appendChild(mesContext);
+  row.appendChild(mesText);
+}
+
+/**
+ * Display a list of messages pulled from the main thread.
+ * @param {Array} messageList
+ */
+function displayMessages(messageList) {
+  messageList.forEach((message) => {
+    showLogMessage(message.timestamp, message.channel, message.message)
+  });
+
+  let currentCount = parseInt(document.getElementById('log-console-load-more').dataset.count, 10);
+  currentCount += messageList.length;
+  document.getElementById('log-console-load-more').dataset.count = currentCount;
+}
 
 /**
  * Attaches the DOM element for a table header element attached an existing table.
@@ -145,19 +245,6 @@ const generateTableCell = (tableRow, content, isText = true, position = -1) => {
   } else {
     tableRow.insertBefore(cellNode, tableRow.children[position]);
   }
-};
-
-/**
- * Displays an object as JSON in the raw response section of the interface.
- * @param {Object} responseObject The JSForce response object.
- */
-const displayRawResponse = (responseObject) => {
-  $('#raw-response').jsonViewer(responseObject, {
-    collapsed: true,
-    rootCollapsable: false,
-    withQuotes: true,
-    withLinks: true,
-  });
 };
 
 /**
@@ -640,6 +727,11 @@ window.api.receive('response_permset_detail', (data) => {
   if (data.status) {
     refreshObjectDisplay(data);
   }
+});
+
+// Process a log message.
+window.api.receive('log_messages', (data) => {
+  displayMessages(data.messages);
 });
 
 // ========= Messages to the main process ===============

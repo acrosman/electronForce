@@ -25,7 +25,6 @@ app.allowRendererProcessReuse = true;
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
-let consoleWindow;
 
 // Create the main application window.
 function createMainWindow() {
@@ -50,8 +49,8 @@ function createMainWindow() {
   // and load the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/app/index.html`);
 
-  // Attach to ElectronForce handlers
-  electronForce.setwindow('main', mainWindow);
+  // Attach to ElectronForce handlers.
+  electronForce.setWindow(mainWindow);
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
@@ -62,44 +61,10 @@ function createMainWindow() {
   });
 }
 
-// Create the logging console window.
-// @TODO: Generalize this and merge with previous function.
-function createLoggingConsole() {
-  const display = electron.screen.getPrimaryDisplay();
-  // Create the browser window.
-  consoleWindow = new BrowserWindow({
-    width: Math.min(1200, display.workArea.width),
-    height: display.workArea.height / 2,
-    frame: true,
-    webPreferences: {
-      nodeIntegration: false, // Disable nodeIntegration for security.
-      nodeIntegrationInWorker: false,
-      nodeIntegrationInSubFrames: false,
-      contextIsolation: true, // Enabling contextIsolation for security.
-      worldSafeExecuteJavaScript: true, // https://github.com/electron/electron/pull/24712
-      enableRemoteModule: false, // Turn off remote to avoid temptation.
-      preload: path.join(app.getAppPath(), 'app/consolePreload.js'),
-    },
-  });
-  consoleWindow.loadURL(`file://${__dirname}/app/console.html`);
-
-  // Connect to ElectronForce.
-  electronForce.setwindow('console', consoleWindow);
-
-  // Emitted when the window is closed.
-  consoleWindow.on('closed', () => {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    consoleWindow = null;
-  });
-}
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createMainWindow);
-app.on('ready', createLoggingConsole);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -144,7 +109,6 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
     createMainWindow();
-    createLoggingConsole();
   }
 });
 

@@ -1,12 +1,13 @@
 // Preload script.
 const { contextBridge, ipcRenderer } = require('electron'); // eslint-disable-line
-const { handlers } = require('../src/electronForce.js');
+const { handlers } = require('../src/electronForce');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object.
 // Big hat tip: https://stackoverflow.com/a/59814127/24215.
 contextBridge.exposeInMainWorld(
-  'api', {
+  'api',
+  {
     send: (channel, data) => {
       // The electronForce handlers are the list of valid channels.
       const validChannels = Object.getOwnPropertyNames(handlers);
@@ -16,6 +17,7 @@ contextBridge.exposeInMainWorld(
     },
     receive: (channel, func) => {
       const validChannels = [
+        'log_messages',
         'response_login',
         'response_logout',
         'response_query',
