@@ -6,7 +6,6 @@
   "scripts": {
     "start": "electron .",
     "lint": "eslint src --ignore-path .gitignore",
-    "postinstall": "electron-builder install-app-deps",
     "test-on-commit": "jest --passWithNoTests",
     "prepare": "husky install",
     "package": "electron-forge package",
