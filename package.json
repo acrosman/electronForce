@@ -5,9 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "lint": "eslint --ignore-path .gitignore src",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder -wlm",
+    "lint": "eslint src --ignore-path .gitignore",
     "postinstall": "electron-builder install-app-deps",
     "test-on-commit": "jest --passWithNoTests",
     "prepare": "husky install",
