@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; font-src https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:">
     <link rel="stylesheet" href="../node_modules/bootswatch/dist/cyborg/bootstrap.min.css">
@@ -17,7 +18,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="consoleModalLabel">Message Console</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -37,7 +38,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-count="0" id="log-console-load-more">Load
                         More</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -54,8 +55,8 @@
                             This is a Salesforce API interface build using JSForce and Electron. It allows basic
                             interactions with Salesforce remote APIs to assist development and testing.
                         </p>
-                        <button type="button" class="btn btn-info btn-lg" data-toggle="modal"
-                            data-target="#loginModal">Create New Connection</button>
+                        <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal"
+                            data-bs-target="#loginModal">Create New Connection</button>
                     </div>
                     <div class="card-footer" id="org-status">
                         <label for="active-org">Active Org for next action.</label>
@@ -71,7 +72,7 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="loginModalLabel">Enter Salesforce Login</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
@@ -105,9 +106,10 @@
                                     </form>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
                                     <button type="button" class="btn btn-primary" id="login-trigger"
-                                        data-dismiss="modal">Connect</button>
+                                        data-bs-dismiss="modal">Connect</button>
                                 </div>
                             </div>
                         </div>
@@ -119,7 +121,7 @@
                     <h2>Last Response:</h2>
                     <pre id="raw-response" class="pre-scrollable"></pre>
                     <button type="button" id="show-console" class="btn btn-info" value="Show Log Console"
-                        data-toggle="modal" data-target="#consoleModal">Show Log Console</button>
+                        data-bs-toggle="modal" data-bs-target="#consoleModal">Show Log Console</button>
                 </div>
             </div>
         </div>
@@ -267,7 +269,7 @@
         </div>
 </body>
 <script src="../node_modules/jquery/dist/jquery.min.js"></script>
-<script src="../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../node_modules/jquery.json-viewer/json-viewer/jquery.json-viewer.js"></script>
 <script src="render.js"></script>
 
