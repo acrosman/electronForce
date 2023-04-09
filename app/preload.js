@@ -36,7 +36,7 @@ contextBridge.exposeInMainWorld(
         'response_describe',
         'response_describe_global',
         'response_org_object_display',
-        'reponnse_org_limits',
+        'response_org_limits',
         'response_permset_list',
         'response_permset_detail',
         'response_generic',

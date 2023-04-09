@@ -312,7 +312,7 @@ const handlers = {
       logMessage('Info', 'Fetched Org limits');
 
       // Send records back to the interface.
-      mainWindow.webContents.send('reponnse_org_limits', {
+      mainWindow.webContents.send('response_org_limits', {
         status: true,
         message: 'Org Limit Check Successful',
         response: result,

@@ -118,7 +118,7 @@ const object2ul = (data) => {
       li.appendChild(object2ul(data[keys[i]]));
     } else {
       // append the text to the li.
-      li.appendChild(document.createTextNode(data[keys[i]]));
+      li.appendChild(document.createTextNode(`${keys[i]}: ${data[keys[i]]}`));
     }
     ul.appendChild(li); // append the list item to the ul
   }
@@ -700,7 +700,7 @@ window.api.receive('response_org_object_display', (data) => {
 });
 
 // Org Limits Response Handler.
-window.api.receive('reponnse_org_limits', (data) => {
+window.api.receive('response_org_limits', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
   displayRawResponse(data);
