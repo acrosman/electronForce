@@ -700,7 +700,7 @@ window.api.receive('response_org_object_display', (data) => {
 });
 
 // Org Limits Response Handler.
-window.api.receive('reponnse_org_limits', (data) => {
+window.api.receive('response_org_limits', (data) => {
   document.getElementById('results-table-wrapper').style.display = 'none';
   document.getElementById('results-object-viewer-wrapper').style.display = 'block';
   displayRawResponse(data);
