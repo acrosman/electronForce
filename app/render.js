@@ -118,7 +118,7 @@ const object2ul = (data) => {
       li.appendChild(object2ul(data[keys[i]]));
     } else {
       // append the text to the li.
-      li.appendChild(document.createTextNode(data[keys[i]]));
+      li.appendChild(document.createTextNode(`${keys[i]}: ${data[keys[i]]}`));
     }
     ul.appendChild(li); // append the list item to the ul
   }
