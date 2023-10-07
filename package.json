@@ -42,7 +42,7 @@
     "@electron-forge/maker-zip": "^6.0",
     "@electron-forge/publisher-github": "^6.0",
     "debug-menu": "^0.6.1",
-    "electron": "^25",
+    "electron": "^26",
     "electron-debug": "^2.2.0",
     "electron-forge": "^5.2.4",
     "electron-reloader": "^1.1.0",
