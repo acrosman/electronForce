@@ -30,7 +30,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "jquery": "^3.5.1",
     "jquery.json-viewer": "^1.5.0",
-    "jsforce": "^1.10.1",
+    "jsforce": "^3",
     "minimist": "^1.2.6"
   },
   "devDependencies": {
@@ -42,7 +42,7 @@
     "@electron-forge/maker-zip": "^7",
     "@electron-forge/publisher-github": "^7",
     "debug-menu": "^0.6.1",
-    "electron": "^32",
+    "electron": "^36",
     "electron-debug": "^2.2.0",
     "electron-reloader": "^1.1.0",
     "eslint": "^8",
