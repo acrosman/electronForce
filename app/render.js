@@ -625,12 +625,20 @@ const displayPermSetList = (data) => {
 // Login response.
 window.api.receive('response_login', (data) => {
   if (data.status) {
-    // Add the new connection to the list of options.
-    const opt = document.createElement('option');
-    opt.value = data.response.organizationId;
-    opt.innerHTML = data.request.username;
-    opt.id = `sforg-${opt.value}`;
-    document.getElementById('active-org').appendChild(opt);
+    // Check for an existing connection in the drop down.
+    const orgSelect = document.getElementById('active-org');
+    const existingOption = document.getElementById(`sforg-${data.response.organizationId}`);
+
+    if (!existingOption) {
+      // Add the new connection to the list of options.
+      const opt = document.createElement('option');
+      opt.value = data.response.organizationId;
+      opt.innerHTML = data.request.username;
+      opt.id = `sforg-${opt.value}`;
+      orgSelect.appendChild(opt);
+    } else {
+      existingOption.innerHTML = data.request.username;
+    }
 
     // Shuffle what's shown.
     document.getElementById('org-status').style.display = 'block';
