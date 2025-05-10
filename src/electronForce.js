@@ -50,7 +50,7 @@ const handlers = {
       sfConnections[userInfo.organizationId] = {
         instanceUrl: conn.instanceUrl,
         accessToken: conn.accessToken,
-        version: '51.0',
+        version: '63.0',
       };
 
       logMessage('Info', `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`);
