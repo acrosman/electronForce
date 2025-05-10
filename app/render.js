@@ -197,7 +197,7 @@ function showLogMessage(timestamp, channel, message) {
  */
 function displayMessages(messageList) {
   messageList.forEach((message) => {
-    showLogMessage(message.timestamp, message.channel, message.message)
+    showLogMessage(message.timestamp, message.channel, message.message);
   });
 
   let currentCount = parseInt(document.getElementById('log-console-load-more').dataset.count, 10);
