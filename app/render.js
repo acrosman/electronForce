@@ -622,9 +622,10 @@ const displayPermSetList = (data) => {
 };
 
 // ===== Response handlers from IPC Messages to render context ======
-// OAuth URL response — the main process already opened the browser; show a status note.
+// OAuth URL response — open the browser and show a status note.
 window.api.receive('response_oauth_url', (data) => {
-  replaceText('login-response-message', `Browser opened for authentication. Return here once complete.\n${data.url}`);
+  window.api.send('sf_open_browser', { url: data.url });
+  replaceText('login-response-message', 'Browser opened for authentication. Return here once complete.');
 });
 
 // Login response.
@@ -742,6 +743,21 @@ window.api.receive('response_permset_detail', (data) => {
   }
 });
 
+// Settings response — populate the settings form fields.
+window.api.receive('response_settings', (data) => {
+  if (data.status && data.response) {
+    if (data.response.consumerKey) {
+      document.getElementById('settings-consumer-key').value = data.response.consumerKey;
+    }
+    if (data.response.consumerSecret) {
+      document.getElementById('settings-consumer-secret').value = data.response.consumerSecret;
+    }
+    if (data.response.loginUrl) {
+      document.getElementById('settings-login-url').value = data.response.loginUrl;
+    }
+  }
+});
+
 // Process a log message.
 window.api.receive('log_messages', (data) => {
   displayMessages(data.messages);
@@ -749,8 +765,22 @@ window.api.receive('log_messages', (data) => {
 
 // ========= Messages to the main process ===============
 // Login — starts the OAuth flow; the main process opens the browser.
-document.getElementById('login-trigger').addEventListener('click', () => {
+document.getElementById('authorize-trigger').addEventListener('click', () => {
   window.api.send('sf_oauth_start', {});
+});
+
+// Settings — load settings when the modal opens.
+document.getElementById('settingsModal').addEventListener('show.bs.modal', () => {
+  window.api.send('sf_get_settings', {});
+});
+
+// Settings — save settings on button click.
+document.getElementById('settings-save-trigger').addEventListener('click', () => {
+  window.api.send('sf_save_settings', {
+    consumerKey: document.getElementById('settings-consumer-key').value,
+    consumerSecret: document.getElementById('settings-consumer-secret').value,
+    loginUrl: document.getElementById('settings-login-url').value,
+  });
 });
 
 // Logout

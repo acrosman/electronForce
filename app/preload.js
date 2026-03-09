@@ -23,6 +23,8 @@ contextBridge.exposeInMainWorld(
         'sf_orgProfiles',
         'sf_orgPermSets',
         'sf_orgPermSetDetail',
+        'sf_get_settings',
+        'sf_save_settings',
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
@@ -42,6 +44,7 @@ contextBridge.exposeInMainWorld(
         'response_permset_list',
         'response_permset_detail',
         'response_generic',
+        'response_settings',
       ];
       if (validChannels.includes(channel)) {
         // Remove the event to avoid information leaks.

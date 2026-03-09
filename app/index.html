@@ -57,6 +57,8 @@
                         </p>
                         <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal"
                             data-bs-target="#loginModal">Create New Connection</button>
+                        <button type="button" class="btn btn-secondary btn-lg" data-bs-toggle="modal"
+                            data-bs-target="#settingsModal">Settings</button>
                     </div>
                     <div class="card-footer" id="org-status">
                         <label for="active-org">Active Org for next action.</label>
@@ -77,23 +79,53 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <p>Click <strong>Connect</strong> to open your browser and authenticate with
-                                        Salesforce via OAuth. Once you approve access in the browser, this application
-                                        will be connected automatically.</p>
-                                    <p class="text-muted small">The login URL and Connected App credentials are
-                                        configured in application settings.</p>
+                                    <button type="button" class="btn btn-primary btn-block w-100" id="authorize-trigger"
+                                        data-bs-dismiss="modal">Authorize with Salesforce</button>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary"
                                         data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" id="login-trigger"
-                                        data-bs-dismiss="modal">Connect</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="settings-consumer-key">Consumer Key</label>
+                                <input type="text" class="form-control" id="settings-consumer-key">
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-consumer-secret">Consumer Secret</label>
+                                <input type="password" class="form-control" id="settings-consumer-secret">
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-login-url">Login URL</label>
+                                <input type="text" class="form-control" id="settings-login-url"
+                                    value="https://login.salesforce.com">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="settings-save-trigger">Save
+                                Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="col-md-8">
                 <div class="card bg-default" id=raw-response-wrapper>
                     <h2>Last Response:</h2>
