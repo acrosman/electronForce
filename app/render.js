@@ -622,6 +622,11 @@ const displayPermSetList = (data) => {
 };
 
 // ===== Response handlers from IPC Messages to render context ======
+// OAuth URL response — the main process already opened the browser; show a status note.
+window.api.receive('response_oauth_url', (data) => {
+  replaceText('login-response-message', `Browser opened for authentication. Return here once complete.\n${data.url}`);
+});
+
 // Login response.
 window.api.receive('response_login', (data) => {
   if (data.status) {
@@ -743,14 +748,9 @@ window.api.receive('log_messages', (data) => {
 });
 
 // ========= Messages to the main process ===============
-// Login
+// Login — starts the OAuth flow; the main process opens the browser.
 document.getElementById('login-trigger').addEventListener('click', () => {
-  window.api.send('sf_login', {
-    username: document.getElementById('login-username').value,
-    password: document.getElementById('login-password').value,
-    token: document.getElementById('login-token').value,
-    url: document.getElementById('login-url').value,
-  });
+  window.api.send('sf_oauth_start', {});
 });
 
 // Logout

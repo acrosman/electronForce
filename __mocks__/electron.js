@@ -5,4 +5,7 @@ module.exports = {
   app: {
     getPath: jest.fn(() => path.join(os.tmpdir(), 'electronforce-test')),
   },
+  shell: {
+    openExternal: jest.fn(),
+  },
 };

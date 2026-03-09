@@ -1,4 +1,9 @@
+const http = require('http');
+const { URL } = require('url');
 const jsforce = require('jsforce');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { shell } = require('electron');
+const settings = require('./settings');
 
 const sfConnections = {};
 const logMessages = [];
@@ -29,46 +34,115 @@ const handlers = {
       totalCount: logMessages.length,
     });
   },
-  // Login to an org using password authentication.
-  sf_login: async (event, args) => {
-    const conn = new jsforce.Connection({
-      loginUrl: args.url,
-    });
-
+  // Start an OAuth login flow using a Connected App.
+  sf_oauth_start: async (event, args) => {
     try {
-      let { password } = args;
-      if (args.token !== '') {
-        password = `${password}${args.token}`;
-      }
+      const {
+        consumerKey,
+        consumerSecret,
+        loginUrl,
+        callbackPort,
+      } = settings.getSettings();
 
-      // Clear sensitive data
-      args.password = '';
-      args.token = '';
+      const port = callbackPort || 3835;
 
-      const userInfo = await conn.login(args.username, password);
+      const oauth2 = new jsforce.OAuth2({
+        clientId: consumerKey,
+        clientSecret: consumerSecret,
+        redirectUri: `http://localhost:${port}/callback`,
+        loginUrl,
+      });
 
-      sfConnections[userInfo.organizationId] = {
-        instanceUrl: conn.instanceUrl,
-        accessToken: conn.accessToken,
-        version: '63.0',
-      };
+      const authUrl = oauth2.getAuthorizationUrl({ scope: 'api' });
 
-      logMessage('Info', `Connection Org ${userInfo.organizationId} for User ${userInfo.id}`);
+      // Notify the renderer so it can show a status message.
+      mainWindow.webContents.send('response_oauth_url', { url: authUrl });
 
-      mainWindow.webContents.send('response_login', {
-        status: true,
-        message: 'Login Successful',
-        response: userInfo,
-        limitInfo: conn.limitInfo,
-        request: args,
+      // Open the user's default browser directly from the main process.
+      shell.openExternal(authUrl);
+
+      // One-time HTTP server to receive the OAuth callback.
+      const server = http.createServer(async (req, res) => {
+        const reqUrl = new URL(req.url, `http://localhost:${port}`);
+
+        if (reqUrl.pathname !== '/callback') {
+          res.writeHead(404);
+          res.end('Not found');
+          return;
+        }
+
+        const code = reqUrl.searchParams.get('code');
+        const oauthError = reqUrl.searchParams.get('error');
+
+        if (oauthError || !code) {
+          res.writeHead(400);
+          res.end(`OAuth error: ${oauthError || 'No code returned'}`);
+          server.close();
+          logMessage('Error', `OAuth callback error: ${oauthError}`);
+          mainWindow.webContents.send('response_generic', {
+            status: false,
+            message: 'OAuth Failed',
+            response: String(oauthError || 'No code returned'),
+            limitInfo: {},
+            request: args,
+          });
+          return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end('<html><body><h1>Authentication successful! You may close this tab.</h1></body></html>');
+        server.close();
+
+        try {
+          const conn = new jsforce.Connection({ oauth2, loginUrl });
+          const userInfo = await conn.authorize(code);
+          const identity = await conn.identity();
+
+          sfConnections[userInfo.organizationId] = {
+            instanceUrl: conn.instanceUrl,
+            accessToken: conn.accessToken,
+            version: '63.0',
+          };
+
+          logMessage('Info', `OAuth Connection Org ${userInfo.organizationId} for User ${identity.username}`);
+
+          mainWindow.webContents.send('response_login', {
+            status: true,
+            message: 'Login Successful',
+            response: userInfo,
+            limitInfo: conn.limitInfo,
+            request: { username: identity.username },
+          });
+        } catch (authErr) {
+          logMessage('Error', `OAuth token exchange failed: ${authErr}`);
+          mainWindow.webContents.send('response_generic', {
+            status: false,
+            message: 'OAuth Token Exchange Failed',
+            response: String(authErr),
+            limitInfo: {},
+            request: args,
+          });
+        }
+      });
+
+      server.listen(port);
+
+      // Close the server automatically after 5 minutes.
+      const timeout = setTimeout(() => {
+        server.close();
+        logMessage('Info', 'OAuth callback server closed after 5-minute timeout');
+      }, 5 * 60 * 1000);
+
+      server.on('close', () => {
+        clearTimeout(timeout);
       });
     } catch (err) {
-      logMessage('Error', `Login Failed ${err}`);
+      logMessage('Error', `OAuth Start Failed: ${err}`);
       mainWindow.webContents.send('response_generic', {
         status: false,
-        message: 'Login Failed',
-        response: err,
-        limitInfo: conn.limitInfo,
+        message: 'OAuth Start Failed',
+        response: String(err),
+        limitInfo: {},
         request: args,
       });
     }

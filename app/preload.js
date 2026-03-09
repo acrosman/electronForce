@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld(
       // The electronForce handlers are the list of valid channels.
       const validChannels = [
         'get_log_messages',
-        'sf_login',
+        'sf_oauth_start',
         'sf_logout',
         'sf_query',
         'sf_search',
@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld(
     receive: (channel, func) => {
       const validChannels = [
         'log_messages',
+        'response_oauth_url',
         'response_login',
         'response_logout',
         'response_query',
