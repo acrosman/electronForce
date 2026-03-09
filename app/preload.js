@@ -12,7 +12,6 @@ contextBridge.exposeInMainWorld(
       const validChannels = [
         'get_log_messages',
         'sf_oauth_start',
-        'sf_open_browser',
         'sf_logout',
         'sf_query',
         'sf_search',

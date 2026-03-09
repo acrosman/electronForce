@@ -231,3 +231,98 @@ describe('sf_oauth_start', () => {
     });
   });
 });
+
+// ── sf_get_settings ──────────────────────────────────────────────────────────────────────────
+describe('sf_get_settings', () => {
+  beforeAll(() => {
+    setWindow(mockWindow);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('sends response_settings with status true and the settings object on success', async () => {
+    const mockSettingsData = {
+      consumerKey: 'key',
+      consumerSecret: 'secret',
+      loginUrl: 'https://login.salesforce.com',
+      callbackPort: 3835,
+    };
+    settings.getSettings.mockReturnValue(mockSettingsData);
+
+    await handlers.sf_get_settings({}, {});
+
+    expect(mockSend).toHaveBeenCalledWith('response_settings', {
+      status: true,
+      message: 'Settings Loaded',
+      response: mockSettingsData,
+      limitInfo: {},
+      request: {},
+    });
+  });
+
+  it('sends response_generic with status false when getSettings throws', async () => {
+    settings.getSettings.mockImplementation(() => {
+      throw new Error('disk read error');
+    });
+
+    await handlers.sf_get_settings({}, {});
+
+    expect(mockSend).toHaveBeenCalledWith(
+      'response_generic',
+      expect.objectContaining({ status: false, message: 'Get Settings Failed' }),
+    );
+  });
+});
+
+// ── sf_save_settings ─────────────────────────────────────────────────────────────────────
+describe('sf_save_settings', () => {
+  const settingsArgs = {
+    consumerKey: 'new-key',
+    consumerSecret: 'new-secret',
+    loginUrl: 'https://test.salesforce.com',
+    callbackPort: 4000,
+  };
+
+  beforeAll(() => {
+    setWindow(mockWindow);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('sends response_settings with status true when saveSettings returns true', async () => {
+    settings.saveSettings.mockReturnValue(true);
+
+    await handlers.sf_save_settings({}, settingsArgs);
+
+    expect(mockSend).toHaveBeenCalledWith('response_settings',
+      expect.objectContaining({ status: true, message: 'Settings Saved' }));
+  });
+
+  it('sends response_generic with status false when saveSettings returns false', async () => {
+    settings.saveSettings.mockReturnValue(false);
+
+    await handlers.sf_save_settings({}, settingsArgs);
+
+    expect(mockSend).toHaveBeenCalledWith(
+      'response_generic',
+      expect.objectContaining({ status: false, message: 'Save Settings Failed' }),
+    );
+  });
+
+  it('sends response_generic with status false when saveSettings throws', async () => {
+    settings.saveSettings.mockImplementation(() => {
+      throw new Error('write error');
+    });
+
+    await handlers.sf_save_settings({}, settingsArgs);
+
+    expect(mockSend).toHaveBeenCalledWith(
+      'response_generic',
+      expect.objectContaining({ status: false, message: 'Save Settings Failed' }),
+    );
+  });
+});

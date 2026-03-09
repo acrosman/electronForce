@@ -148,6 +148,68 @@ const handlers = {
     }
   },
 
+  // Load settings and send them to the renderer.
+  sf_get_settings: async (event, args) => {
+    try {
+      const settingsData = settings.getSettings();
+      logMessage('Info', 'Settings Loaded');
+      mainWindow.webContents.send('response_settings', {
+        status: true,
+        message: 'Settings Loaded',
+        response: settingsData,
+        limitInfo: {},
+        request: args,
+      });
+    } catch (err) {
+      logMessage('Error', `Get Settings Failed: ${err}`);
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Get Settings Failed',
+        response: String(err),
+        limitInfo: {},
+        request: args,
+      });
+    }
+  },
+
+  // Save settings received from the renderer.
+  sf_save_settings: async (event, args) => {
+    try {
+      const {
+        consumerKey,
+        consumerSecret,
+        loginUrl,
+        callbackPort,
+      } = args;
+      const saved = settings.saveSettings({
+        consumerKey,
+        consumerSecret,
+        loginUrl,
+        callbackPort,
+      });
+      if (!saved) {
+        throw new Error('saveSettings returned false');
+      }
+      logMessage('Info', 'Settings Saved');
+      mainWindow.webContents.send('response_settings', {
+        status: true,
+        message: 'Settings Saved',
+        response: saved,
+        limitInfo: {},
+        request: args,
+      });
+    } catch (err) {
+      logMessage('Error', `Save Settings Failed: ${err}`);
+      mainWindow.webContents.send('response_generic', {
+        status: false,
+        message: 'Save Settings Failed',
+        response: String(err),
+        limitInfo: {},
+        request: args,
+      });
+    }
+  },
+
   // Logout of Salesforce.
   sf_logout: async (event, args) => {
     const conn = new jsforce.Connection(sfConnections[args.org]);

@@ -5,7 +5,6 @@ const {
   app,
   BrowserWindow,
   ipcMain,
-  shell,
 } = electron;
 
 // Developer Dependencies.
@@ -125,14 +124,4 @@ app.on('activate', () => {
 const efHandlers = Object.getOwnPropertyNames(electronForce.handlers);
 efHandlers.forEach((value) => {
   ipcMain.on(value, electronForce.handlers[value]);
-});
-
-// Open a URL in the user's default browser.
-// The renderer sends the URL received from response_oauth_url so the user can
-// manually re-open the auth page if needed.
-ipcMain.on('sf_open_browser', (event, args) => {
-  const { url } = args;
-  if (url) {
-    shell.openExternal(url);
-  }
 });

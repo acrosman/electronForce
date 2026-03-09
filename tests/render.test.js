@@ -76,19 +76,17 @@ describe('response_oauth_url handler', () => {
     expect(receivedCallbacks.response_oauth_url).toBeDefined();
   });
 
-  it('calls window.api.send with sf_open_browser and the provided URL', () => {
+  it('does not call window.api.send at all (browser is opened by main process)', () => {
     receivedCallbacks.response_oauth_url({ url: 'https://login.salesforce.com/auth?client_id=test' });
 
-    expect(mockSend).toHaveBeenCalledWith('sf_open_browser', {
-      url: 'https://login.salesforce.com/auth?client_id=test',
-    });
+    expect(mockSend).not.toHaveBeenCalled();
   });
 
-  it('passes the exact URL from the data payload through to sf_open_browser', () => {
-    const testUrl = 'https://custom.salesforce.com/services/oauth2/authorize?response_type=code';
-    receivedCallbacks.response_oauth_url({ url: testUrl });
+  it('updates login-response-message with a waiting-for-authorization notice', () => {
+    receivedCallbacks.response_oauth_url({ url: 'https://custom.salesforce.com/services/oauth2/authorize?response_type=code' });
 
-    expect(mockSend).toHaveBeenCalledWith('sf_open_browser', { url: testUrl });
+    const el = document.getElementById('login-response-message');
+    expect(el.innerText).toBe('Waiting for authorization in browser\u2026');
   });
 
   it('does not call window.api.send with sf_login', () => {

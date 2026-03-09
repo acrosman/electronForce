@@ -28,4 +28,14 @@ describe('handlers export', () => {
   it('contains sf_logout', () => {
     expect(handlers).toHaveProperty('sf_logout');
   });
+
+  it('contains sf_get_settings', () => {
+    expect(handlers).toHaveProperty('sf_get_settings');
+    expect(typeof handlers.sf_get_settings).toBe('function');
+  });
+
+  it('contains sf_save_settings', () => {
+    expect(handlers).toHaveProperty('sf_save_settings');
+    expect(typeof handlers.sf_save_settings).toBe('function');
+  });
 });

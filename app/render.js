@@ -622,10 +622,9 @@ const displayPermSetList = (data) => {
 };
 
 // ===== Response handlers from IPC Messages to render context ======
-// OAuth URL response — open the browser and show a status note.
-window.api.receive('response_oauth_url', (data) => {
-  window.api.send('sf_open_browser', { url: data.url });
-  replaceText('login-response-message', 'Browser opened for authentication. Return here once complete.');
+// OAuth URL response — main process already opened the browser via shell.openExternal.
+window.api.receive('response_oauth_url', () => {
+  replaceText('login-response-message', 'Waiting for authorization in browser…');
 });
 
 // Login response.
