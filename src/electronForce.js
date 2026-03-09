@@ -1,4 +1,5 @@
 const http = require('http');
+const crypto = require('crypto');
 const { URL } = require('url');
 const jsforce = require('jsforce');
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -26,6 +27,9 @@ const logMessage = (channel, message, data) => {
 };
 
 const createConnection = (org) => {
+  if (!sfConnections[org]) {
+    throw new Error(`Not connected to org: ${org}`);
+  }
   const conn = new jsforce.Connection(sfConnections[org]);
   conn.on('refresh', (newAccessToken) => {
     sfConnections[org].accessToken = newAccessToken;
@@ -74,7 +78,8 @@ const handlers = {
         loginUrl,
       });
 
-      const authUrl = oauth2.getAuthorizationUrl({ scope: 'api refresh_token' });
+      const state = crypto.randomBytes(16).toString('hex');
+      const authUrl = oauth2.getAuthorizationUrl({ scope: 'api refresh_token', state });
 
       // Notify the renderer so it can show a status message.
       mainWindow.webContents.send('response_oauth_url', { url: authUrl });
@@ -84,11 +89,27 @@ const handlers = {
 
       // One-time HTTP server to receive the OAuth callback.
       const server = http.createServer(async (req, res) => {
-        const reqUrl = new URL(req.url, `http://localhost:${port}`);
+        const reqUrl = new URL(req.url, `http://127.0.0.1:${port}`);
 
         if (reqUrl.pathname !== '/callback') {
           res.writeHead(404);
           res.end('Not found');
+          return;
+        }
+
+        const returnedState = reqUrl.searchParams.get('state');
+        if (!returnedState || returnedState !== state) {
+          res.writeHead(400);
+          res.end('Invalid state parameter');
+          server.close();
+          logMessage('Error', 'OAuth callback state mismatch – possible CSRF attempt');
+          mainWindow.webContents.send('response_generic', {
+            status: false,
+            message: 'OAuth Failed',
+            response: 'Invalid state parameter',
+            limitInfo: {},
+            request: args,
+          });
           return;
         }
 
@@ -158,7 +179,18 @@ const handlers = {
         }
       });
 
-      server.listen(port);
+      server.listen(port, '127.0.0.1');
+
+      server.on('error', (serverErr) => {
+        logMessage('Error', `OAuth callback server error: ${serverErr}`);
+        mainWindow.webContents.send('response_generic', {
+          status: false,
+          message: 'OAuth Callback Server Error',
+          response: String(serverErr),
+          limitInfo: {},
+          request: args,
+        });
+      });
 
       // Close the server automatically after 5 minutes.
       const timeout = setTimeout(() => {
@@ -227,7 +259,11 @@ const handlers = {
       mainWindow.webContents.send('response_settings', {
         status: true,
         message: 'Settings Saved',
-        response: saved,
+        response: {
+          consumerKey,
+          loginUrl,
+          callbackPort,
+        },
         limitInfo: {},
         request: args,
       });
@@ -245,8 +281,9 @@ const handlers = {
 
   // Logout of Salesforce.
   sf_logout: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       await conn.logout();
 
       logMessage('Info', `Logged out of ${args.org}`);
@@ -257,14 +294,14 @@ const handlers = {
         limitInfo: conn.limitInfo,
         request: args,
       });
-      sfConnections[args.org] = null;
+      delete sfConnections[args.org];
     } catch (err) {
       logMessage('Error', `Logout Failed ${err}`);
       mainWindow.webContents.send('response_logout', {
         status: false,
         message: 'Logout Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -272,8 +309,9 @@ const handlers = {
 
   // Run a SOQL Query against your org.
   sf_query: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const result = await conn.query(args.rest_api_soql_text);
 
       logMessage('Info', `Ran Query: ${args.rest_api_soql_text}`);
@@ -291,7 +329,7 @@ const handlers = {
         status: false,
         message: 'Query Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -299,8 +337,9 @@ const handlers = {
 
   // Run SOSL search.
   sf_search: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const result = await conn.search(args.rest_api_sosl_text);
 
       logMessage('Info', `Ran Search: ${args.rest_api_sosl_text}`);
@@ -323,7 +362,7 @@ const handlers = {
         status: false,
         message: 'Search Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -331,8 +370,9 @@ const handlers = {
 
   // Run an object describe.
   sf_describe: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const result = await conn.sobject(args.rest_api_describe_text).describe();
 
       logMessage('Info', `Describe of ${args.rest_api_describe_text} Successful`);
@@ -350,7 +390,7 @@ const handlers = {
         status: false,
         message: 'Describe Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -358,8 +398,9 @@ const handlers = {
 
   // Run a Global Describe
   sf_describeGlobal: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const result = await conn.describeGlobal();
 
       logMessage('Info', 'Global Describe Successful');
@@ -377,7 +418,7 @@ const handlers = {
         status: false,
         message: 'Describe Global Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -385,8 +426,9 @@ const handlers = {
 
   // Fetch the Organization object from the active org.
   sf_orgExplore: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const result = await conn.sobject('Organization').describe();
 
       const fields = result.fields.map((field) => field.name).join(', ');
@@ -409,7 +451,7 @@ const handlers = {
         status: false,
         message: 'Org Fetch Failed',
         response: err,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -417,8 +459,9 @@ const handlers = {
 
   // Report current org limits
   sf_orgLimits: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const result = await conn.limits();
 
       logMessage('Info', 'Fetched Org limits');
@@ -436,7 +479,7 @@ const handlers = {
         status: false,
         message: 'Limits Check Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -444,8 +487,9 @@ const handlers = {
 
   // List all profiles.
   sf_orgProfiles: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const profileQuery = 'SELECT Id, Name, Description FROM Profile';
       const result = await conn.query(profileQuery);
 
@@ -464,7 +508,7 @@ const handlers = {
         status: false,
         message: 'Profile Listing Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -472,8 +516,9 @@ const handlers = {
 
   // List all PermSets.
   sf_orgPermSets: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const psQuery = 'SELECT Id, Name, Label, Description, IsCustom, IsOwnedByProfile, Profile.Name FROM PermissionSet ORDER BY IsOwnedByProfile, IsCustom DESC';
       const result = await conn.query(psQuery);
 
@@ -492,7 +537,7 @@ const handlers = {
         status: false,
         message: 'PermSet Listing Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }
@@ -500,8 +545,9 @@ const handlers = {
 
   // Fetch details about a permission set.
   sf_orgPermSetDetail: async (event, args) => {
-    const conn = createConnection(args.org);
+    let conn;
     try {
+      conn = createConnection(args.org);
       const result = await conn.sobject('PermissionSet').describe();
 
       logMessage('Info', 'Fetched Permission Set Describe');
@@ -540,7 +586,7 @@ const handlers = {
         status: false,
         message: 'Permission Set Detail Lookup Failed',
         response: `${err}`,
-        limitInfo: conn.limitInfo,
+        limitInfo: conn ? conn.limitInfo : {},
         request: args,
       });
     }

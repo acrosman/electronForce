@@ -34,6 +34,7 @@ describe('sf_oauth_start', () => {
   let mockAuthorize;
   let mockIdentity;
   let mockConnInstance;
+  let capturedState = null;
 
   beforeAll(() => {
     jest.useFakeTimers();
@@ -46,6 +47,7 @@ describe('sf_oauth_start', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    capturedState = null;
 
     // Always return a mock server from createServer.
     http.createServer.mockReturnValue(mockServer);
@@ -58,10 +60,11 @@ describe('sf_oauth_start', () => {
       callbackPort: 3835,
     });
 
-    // jsforce.OAuth2 mock.
-    mockGetAuthorizationUrl = jest.fn(
-      () => 'https://login.salesforce.com/authorize?client_id=test',
-    );
+    // jsforce.OAuth2 mock – capture the state parameter for use in callback tests.
+    mockGetAuthorizationUrl = jest.fn((params) => {
+      capturedState = params.state;
+      return 'https://login.salesforce.com/authorize?client_id=test';
+    });
     mockOAuth2Instance = { getAuthorizationUrl: mockGetAuthorizationUrl };
     jsforce.OAuth2 = jest.fn(() => mockOAuth2Instance);
 
@@ -112,9 +115,34 @@ describe('sf_oauth_start', () => {
     );
   });
 
-  it('starts the HTTP server on the configured callback port', async () => {
+  it('includes a state parameter in the authorization URL request', async () => {
     await handlers.sf_oauth_start({}, {});
-    expect(mockServer.listen).toHaveBeenCalledWith(3835);
+    expect(mockGetAuthorizationUrl).toHaveBeenCalledWith(
+      expect.objectContaining({ state: expect.any(String) }),
+    );
+    expect(capturedState).toHaveLength(32);
+  });
+
+  it('starts the HTTP server bound to 127.0.0.1 on the configured callback port', async () => {
+    await handlers.sf_oauth_start({}, {});
+    expect(mockServer.listen).toHaveBeenCalledWith(3835, '127.0.0.1');
+  });
+
+  it('registers an error handler on the server', async () => {
+    await handlers.sf_oauth_start({}, {});
+    expect(mockServer.on).toHaveBeenCalledWith('error', expect.any(Function));
+  });
+
+  it('sends response_generic when the server emits an error', async () => {
+    await handlers.sf_oauth_start({}, {});
+    const [[, errorHandler]] = mockServer.on.mock.calls.filter(
+      ([event]) => event === 'error',
+    );
+    errorHandler(new Error('EADDRINUSE'));
+    expect(mockSend).toHaveBeenCalledWith(
+      'response_generic',
+      expect.objectContaining({ status: false, message: 'OAuth Callback Server Error' }),
+    );
   });
 
   it('registers a close handler on the server to clear the timeout', async () => {
@@ -199,8 +227,36 @@ describe('sf_oauth_start', () => {
       expect(res.writeHead).toHaveBeenCalledWith(404);
     });
 
-    it('sends response_login with the correct shape on a successful code exchange', async () => {
+    it('sends response_generic and closes the server when state is missing', async () => {
       const req = makeReq('/callback?code=AUTH_CODE');
+      const res = makeRes();
+      mockServer.close.mockClear();
+      await requestListener(req, res);
+
+      expect(res.writeHead).toHaveBeenCalledWith(400);
+      expect(mockServer.close).toHaveBeenCalled();
+      expect(mockSend).toHaveBeenCalledWith(
+        'response_generic',
+        expect.objectContaining({ status: false, message: 'OAuth Failed', response: 'Invalid state parameter' }),
+      );
+    });
+
+    it('sends response_generic and closes the server when state does not match', async () => {
+      const req = makeReq('/callback?code=AUTH_CODE&state=wrong-state-value');
+      const res = makeRes();
+      mockServer.close.mockClear();
+      await requestListener(req, res);
+
+      expect(res.writeHead).toHaveBeenCalledWith(400);
+      expect(mockServer.close).toHaveBeenCalled();
+      expect(mockSend).toHaveBeenCalledWith(
+        'response_generic',
+        expect.objectContaining({ status: false, message: 'OAuth Failed', response: 'Invalid state parameter' }),
+      );
+    });
+
+    it('sends response_login with the correct shape on a successful code exchange', async () => {
+      const req = makeReq(`/callback?code=AUTH_CODE&state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
 
@@ -215,14 +271,14 @@ describe('sf_oauth_start', () => {
     });
 
     it('passes the auth code directly to conn.authorize', async () => {
-      const req = makeReq('/callback?code=MY_AUTH_CODE');
+      const req = makeReq(`/callback?code=MY_AUTH_CODE&state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
       expect(mockAuthorize).toHaveBeenCalledWith('MY_AUTH_CODE');
     });
 
     it('closes the server after a successful code exchange', async () => {
-      const req = makeReq('/callback?code=AUTH_CODE');
+      const req = makeReq(`/callback?code=AUTH_CODE&state=${capturedState}`);
       const res = makeRes();
       mockServer.close.mockClear();
       await requestListener(req, res);
@@ -230,7 +286,7 @@ describe('sf_oauth_start', () => {
     });
 
     it('sends response_generic and closes the server when OAuth returns an error parameter', async () => {
-      const req = makeReq('/callback?error=access_denied');
+      const req = makeReq(`/callback?error=access_denied&state=${capturedState}`);
       const res = makeRes();
       mockServer.close.mockClear();
       await requestListener(req, res);
@@ -244,7 +300,7 @@ describe('sf_oauth_start', () => {
     });
 
     it('sends response_generic when no code parameter is present', async () => {
-      const req = makeReq('/callback');
+      const req = makeReq(`/callback?state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
 
@@ -258,7 +314,7 @@ describe('sf_oauth_start', () => {
     it('sends response_generic when token exchange rejects', async () => {
       mockAuthorize.mockRejectedValue(new Error('token error'));
 
-      const req = makeReq('/callback?code=BAD_CODE');
+      const req = makeReq(`/callback?code=BAD_CODE&state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
 
@@ -273,7 +329,7 @@ describe('sf_oauth_start', () => {
     });
 
     it('stores the refreshToken in the connection entry', async () => {
-      const req = makeReq('/callback?code=AUTH_CODE');
+      const req = makeReq(`/callback?code=AUTH_CODE&state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
 
@@ -286,7 +342,7 @@ describe('sf_oauth_start', () => {
     });
 
     it('stores the oauth2 config in the connection entry', async () => {
-      const req = makeReq('/callback?code=AUTH_CODE');
+      const req = makeReq(`/callback?code=AUTH_CODE&state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
 
@@ -301,7 +357,7 @@ describe('sf_oauth_start', () => {
     });
 
     it('attaches a refresh listener to the connection after successful code exchange', async () => {
-      const req = makeReq('/callback?code=AUTH_CODE');
+      const req = makeReq(`/callback?code=AUTH_CODE&state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
 
@@ -309,7 +365,7 @@ describe('sf_oauth_start', () => {
     });
 
     it('refresh listener updates the stored access token', async () => {
-      const req = makeReq('/callback?code=AUTH_CODE');
+      const req = makeReq(`/callback?code=AUTH_CODE&state=${capturedState}`);
       const res = makeRes();
       await requestListener(req, res);
 
@@ -390,15 +446,20 @@ describe('sf_save_settings', () => {
     jest.clearAllMocks();
   });
 
-  it('sends response_settings with status true when saveSettings returns true', async () => {
+  it('sends response_settings with status true and the saved settings object (without consumerSecret) when saveSettings returns true', async () => {
     settings.saveSettings.mockReturnValue(true);
 
     await handlers.sf_save_settings({}, settingsArgs);
 
-    expect(mockSend).toHaveBeenCalledWith(
-      'response_settings',
-      expect.objectContaining({ status: true, message: 'Settings Saved' }),
-    );
+    const [[, sentPayload]] = mockSend.mock.calls;
+    expect(sentPayload.status).toBe(true);
+    expect(sentPayload.message).toBe('Settings Saved');
+    expect(sentPayload.response).toEqual({
+      consumerKey: 'new-key',
+      loginUrl: 'https://test.salesforce.com',
+      callbackPort: 4000,
+    });
+    expect(sentPayload.response).not.toHaveProperty('consumerSecret');
   });
 
   it('sends response_generic with status false when saveSettings returns false', async () => {
@@ -442,17 +503,22 @@ describe('createConnection', () => {
   });
 
   it('returns the jsforce.Connection instance', () => {
-    expect(createConnection('any-org')).toBe(mockConnInstance);
+    // '00D000000000001' was seeded into sfConnections by the oauth callback suite above.
+    expect(createConnection('00D000000000001')).toBe(mockConnInstance);
   });
 
   it('calls jsforce.Connection exactly once', () => {
-    createConnection('any-org');
+    createConnection('00D000000000001');
     expect(jsforce.Connection).toHaveBeenCalledTimes(1);
   });
 
   it('attaches a refresh event listener to the connection', () => {
-    createConnection('any-org');
+    createConnection('00D000000000001');
     expect(mockConnInstance.on).toHaveBeenCalledWith('refresh', expect.any(Function));
+  });
+
+  it('throws when the org is not in sfConnections', () => {
+    expect(() => createConnection('unknown-org')).toThrow('Not connected to org: unknown-org');
   });
 
   it('refresh listener updates sfConnections[org].accessToken', () => {
