@@ -25,7 +25,7 @@ const makeRes = () => ({ writeHead: jest.fn(), end: jest.fn() });
 
 // ── Module under test ──────────────────────────────────────────────────────
 // Loaded once; setWindow is called in beforeAll so mainWindow is always set.
-const { handlers, setWindow } = require('../src/electronForce');
+const { handlers, setWindow, createConnection } = require('../src/electronForce');
 
 // ── sf_oauth_start ─────────────────────────────────────────────────────────
 describe('sf_oauth_start', () => {
@@ -76,7 +76,9 @@ describe('sf_oauth_start', () => {
       identity: mockIdentity,
       instanceUrl: 'https://myorg.salesforce.com',
       accessToken: 'ACCESS_TOKEN',
+      refreshToken: 'REFRESH_TOKEN',
       limitInfo: {},
+      on: jest.fn(),
     };
     jsforce.Connection = jest.fn(() => mockConnInstance);
   });
@@ -229,6 +231,61 @@ describe('sf_oauth_start', () => {
         }),
       );
     });
+
+    it('stores the refreshToken in the connection entry', async () => {
+      const req = makeReq('/callback?code=AUTH_CODE');
+      const res = makeRes();
+      await requestListener(req, res);
+
+      jsforce.Connection.mockClear();
+      await handlers.sf_query({}, { org: '00D000000000001', rest_api_soql_text: 'SELECT Id FROM Account' });
+
+      expect(jsforce.Connection).toHaveBeenCalledWith(
+        expect.objectContaining({ refreshToken: 'REFRESH_TOKEN' }),
+      );
+    });
+
+    it('stores the oauth2 config in the connection entry', async () => {
+      const req = makeReq('/callback?code=AUTH_CODE');
+      const res = makeRes();
+      await requestListener(req, res);
+
+      jsforce.Connection.mockClear();
+      await handlers.sf_query({}, { org: '00D000000000001', rest_api_soql_text: 'SELECT Id FROM Account' });
+
+      expect(jsforce.Connection).toHaveBeenCalledWith(
+        expect.objectContaining({
+          oauth2: expect.objectContaining({ clientId: 'test-client-id' }),
+        }),
+      );
+    });
+
+    it('attaches a refresh listener to the connection after successful code exchange', async () => {
+      const req = makeReq('/callback?code=AUTH_CODE');
+      const res = makeRes();
+      await requestListener(req, res);
+
+      expect(mockConnInstance.on).toHaveBeenCalledWith('refresh', expect.any(Function));
+    });
+
+    it('refresh listener updates the stored access token', async () => {
+      const req = makeReq('/callback?code=AUTH_CODE');
+      const res = makeRes();
+      await requestListener(req, res);
+
+      const [[, refreshListener]] = mockConnInstance.on.mock.calls.filter(
+        ([event]) => event === 'refresh',
+      );
+
+      refreshListener('NEW_ACCESS_TOKEN');
+
+      jsforce.Connection.mockClear();
+      await handlers.sf_query({}, { org: '00D000000000001', rest_api_soql_text: 'SELECT Id FROM Account' });
+
+      expect(jsforce.Connection).toHaveBeenCalledWith(
+        expect.objectContaining({ accessToken: 'NEW_ACCESS_TOKEN' }),
+      );
+    });
   });
 });
 
@@ -298,8 +355,10 @@ describe('sf_save_settings', () => {
 
     await handlers.sf_save_settings({}, settingsArgs);
 
-    expect(mockSend).toHaveBeenCalledWith('response_settings',
-      expect.objectContaining({ status: true, message: 'Settings Saved' }));
+    expect(mockSend).toHaveBeenCalledWith(
+      'response_settings',
+      expect.objectContaining({ status: true, message: 'Settings Saved' }),
+    );
   });
 
   it('sends response_generic with status false when saveSettings returns false', async () => {
@@ -323,6 +382,56 @@ describe('sf_save_settings', () => {
     expect(mockSend).toHaveBeenCalledWith(
       'response_generic',
       expect.objectContaining({ status: false, message: 'Save Settings Failed' }),
+    );
+  });
+});
+
+// ── createConnection ──────────────────────────────────────────────────────
+describe('createConnection', () => {
+  let mockConnInstance;
+
+  beforeAll(() => {
+    setWindow(mockWindow);
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockConnInstance = { limitInfo: {}, on: jest.fn() };
+    jsforce.Connection = jest.fn(() => mockConnInstance);
+  });
+
+  it('returns the jsforce.Connection instance', () => {
+    expect(createConnection('any-org')).toBe(mockConnInstance);
+  });
+
+  it('calls jsforce.Connection exactly once', () => {
+    createConnection('any-org');
+    expect(jsforce.Connection).toHaveBeenCalledTimes(1);
+  });
+
+  it('attaches a refresh event listener to the connection', () => {
+    createConnection('any-org');
+    expect(mockConnInstance.on).toHaveBeenCalledWith('refresh', expect.any(Function));
+  });
+
+  it('refresh listener updates sfConnections[org].accessToken', () => {
+    // '00D000000000001' was seeded into sfConnections by the oauth callback
+    // suite above (module state is shared across describe blocks).
+    const ORG = '00D000000000001';
+    let capturedListener;
+    mockConnInstance.on = jest.fn((event, cb) => {
+      if (event === 'refresh') capturedListener = cb;
+    });
+
+    createConnection(ORG);
+    capturedListener('UPDATED_TOKEN');
+
+    // Verify the updated token is passed through on the next createConnection call.
+    jsforce.Connection = jest.fn(() => mockConnInstance);
+    createConnection(ORG);
+    expect(jsforce.Connection).toHaveBeenCalledWith(
+      expect.objectContaining({ accessToken: 'UPDATED_TOKEN' }),
     );
   });
 });

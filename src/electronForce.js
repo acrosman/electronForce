@@ -25,6 +25,15 @@ const logMessage = (channel, message, data) => {
   logMessages.unshift(newMessage);
 };
 
+const createConnection = (org) => {
+  const conn = new jsforce.Connection(sfConnections[org]);
+  conn.on('refresh', (newAccessToken) => {
+    sfConnections[org].accessToken = newAccessToken;
+    logMessage('Info', `Access token refreshed for org ${org}`);
+  });
+  return conn;
+};
+
 const handlers = {
   // Send a list of log messages to the main window.
   get_log_messages: (event, args) => {
@@ -53,7 +62,7 @@ const handlers = {
         loginUrl,
       });
 
-      const authUrl = oauth2.getAuthorizationUrl({ scope: 'api' });
+      const authUrl = oauth2.getAuthorizationUrl({ scope: 'api refresh_token' });
 
       // Notify the renderer so it can show a status message.
       mainWindow.webContents.send('response_oauth_url', { url: authUrl });
@@ -101,8 +110,20 @@ const handlers = {
           sfConnections[userInfo.organizationId] = {
             instanceUrl: conn.instanceUrl,
             accessToken: conn.accessToken,
+            refreshToken: conn.refreshToken,
             version: '63.0',
+            oauth2: {
+              clientId: consumerKey,
+              clientSecret: consumerSecret,
+              loginUrl,
+              redirectUri: `http://localhost:${port}/callback`,
+            },
           };
+
+          conn.on('refresh', (newAccessToken) => {
+            sfConnections[userInfo.organizationId].accessToken = newAccessToken;
+            logMessage('Info', `Access token refreshed for org ${userInfo.organizationId}`);
+          });
 
           logMessage('Info', `OAuth Connection Org ${userInfo.organizationId} for User ${identity.username}`);
 
@@ -212,7 +233,7 @@ const handlers = {
 
   // Logout of Salesforce.
   sf_logout: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       await conn.logout();
 
@@ -239,7 +260,7 @@ const handlers = {
 
   // Run a SOQL Query against your org.
   sf_query: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const result = await conn.query(args.rest_api_soql_text);
 
@@ -266,7 +287,7 @@ const handlers = {
 
   // Run SOSL search.
   sf_search: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const result = await conn.search(args.rest_api_sosl_text);
 
@@ -298,7 +319,7 @@ const handlers = {
 
   // Run an object describe.
   sf_describe: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const result = await conn.sobject(args.rest_api_describe_text).describe();
 
@@ -325,7 +346,7 @@ const handlers = {
 
   // Run a Global Describe
   sf_describeGlobal: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const result = await conn.describeGlobal();
 
@@ -352,7 +373,7 @@ const handlers = {
 
   // Fetch the Organization object from the active org.
   sf_orgExplore: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const result = await conn.sobject('Organization').describe();
 
@@ -384,7 +405,7 @@ const handlers = {
 
   // Report current org limits
   sf_orgLimits: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const result = await conn.limits();
 
@@ -411,7 +432,7 @@ const handlers = {
 
   // List all profiles.
   sf_orgProfiles: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const profileQuery = 'SELECT Id, Name, Description FROM Profile';
       const result = await conn.query(profileQuery);
@@ -439,7 +460,7 @@ const handlers = {
 
   // List all PermSets.
   sf_orgPermSets: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const psQuery = 'SELECT Id, Name, Label, Description, IsCustom, IsOwnedByProfile, Profile.Name FROM PermissionSet ORDER BY IsOwnedByProfile, IsCustom DESC';
       const result = await conn.query(psQuery);
@@ -467,7 +488,7 @@ const handlers = {
 
   // Fetch details about a permission set.
   sf_orgPermSetDetail: async (event, args) => {
-    const conn = new jsforce.Connection(sfConnections[args.org]);
+    const conn = createConnection(args.org);
     try {
       const result = await conn.sobject('PermissionSet').describe();
 
@@ -516,3 +537,4 @@ const handlers = {
 
 exports.handlers = handlers;
 exports.setWindow = setWindow;
+exports.createConnection = createConnection;
