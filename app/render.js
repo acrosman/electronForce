@@ -662,6 +662,9 @@ window.api.receive('response_logout', (data) => {
 // Generic Response.
 window.api.receive('response_generic', (data) => {
   displayRawResponse(data);
+  if (!data.status) {
+    replaceText('login-response-message', data.message);
+  }
 });
 
 // Query Response. Print the query results in table.

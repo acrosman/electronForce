@@ -142,6 +142,46 @@ describe('sf_oauth_start', () => {
     expect(mockServer.close).toHaveBeenCalled();
   });
 
+  it('sends response_generic and does not construct OAuth2 when consumerKey is empty', async () => {
+    settings.getSettings.mockReturnValue({
+      consumerKey: '',
+      consumerSecret: 'test-client-secret',
+      loginUrl: 'https://login.salesforce.com',
+      callbackPort: 3835,
+    });
+
+    await handlers.sf_oauth_start({}, {});
+
+    expect(mockSend).toHaveBeenCalledWith(
+      'response_generic',
+      expect.objectContaining({
+        status: false,
+        message: 'No Connected App credentials configured. Please open Settings and enter your Consumer Key and Consumer Secret.',
+      }),
+    );
+    expect(jsforce.OAuth2).not.toHaveBeenCalled();
+  });
+
+  it('sends response_generic and does not construct OAuth2 when consumerSecret is empty', async () => {
+    settings.getSettings.mockReturnValue({
+      consumerKey: 'test-client-id',
+      consumerSecret: '',
+      loginUrl: 'https://login.salesforce.com',
+      callbackPort: 3835,
+    });
+
+    await handlers.sf_oauth_start({}, {});
+
+    expect(mockSend).toHaveBeenCalledWith(
+      'response_generic',
+      expect.objectContaining({
+        status: false,
+        message: 'No Connected App credentials configured. Please open Settings and enter your Consumer Key and Consumer Secret.',
+      }),
+    );
+    expect(jsforce.OAuth2).not.toHaveBeenCalled();
+  });
+
   // ── Callback server request handler ──────────────────────────────────────
   describe('HTTP callback request handler', () => {
     let requestListener;

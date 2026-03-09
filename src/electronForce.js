@@ -53,6 +53,18 @@ const handlers = {
         callbackPort,
       } = settings.getSettings();
 
+      if (!consumerKey || !consumerSecret) {
+        logMessage('Warn', 'OAuth start attempted without Connected App credentials configured');
+        mainWindow.webContents.send('response_generic', {
+          status: false,
+          message: 'No Connected App credentials configured. Please open Settings and enter your Consumer Key and Consumer Secret.',
+          response: '',
+          limitInfo: {},
+          request: args,
+        });
+        return;
+      }
+
       const port = callbackPort || 3835;
 
       const oauth2 = new jsforce.OAuth2({
