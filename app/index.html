@@ -116,6 +116,13 @@
                                 <input type="text" class="form-control" id="settings-login-url"
                                     value="https://login.salesforce.com">
                             </div>
+                            <div class="form-group">
+                                <label for="settings-callback-port">OAuth Callback Port</label>
+                                <input type="number" class="form-control" id="settings-callback-port" min="1024"
+                                    max="65535" value="3835">
+                                <small class="form-text">The local port used to receive the OAuth callback. Default:
+                                    3835.</small>
+                            </div>
                             <p><span id="settings-status-message"></span></p>
                         </div>
                         <div class="modal-footer">

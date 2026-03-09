@@ -33,7 +33,7 @@ function createDomFixtures() {
   }
 
   // Settings form fields and status message.
-  ['settings-consumer-key', 'settings-consumer-secret', 'settings-login-url'].forEach((id) => {
+  ['settings-consumer-key', 'settings-consumer-secret', 'settings-login-url', 'settings-callback-port'].forEach((id) => {
     if (!document.getElementById(id)) {
       const el = document.createElement('input');
       el.id = id;
@@ -118,6 +118,7 @@ describe('response_settings handler', () => {
     document.getElementById('settings-consumer-key').value = '';
     document.getElementById('settings-consumer-secret').value = '';
     document.getElementById('settings-login-url').value = '';
+    document.getElementById('settings-callback-port').value = '';
     document.getElementById('settings-status-message').innerText = '';
   });
 
@@ -145,12 +146,36 @@ describe('response_settings handler', () => {
         consumerKey: 'myKey',
         consumerSecret: 'mySecret',
         loginUrl: 'https://test.salesforce.com',
+        callbackPort: 8080,
       },
     });
 
     expect(document.getElementById('settings-consumer-key').value).toBe('myKey');
     expect(document.getElementById('settings-consumer-secret').value).toBe('mySecret');
     expect(document.getElementById('settings-login-url').value).toBe('https://test.salesforce.com');
+    expect(document.getElementById('settings-callback-port').value).toBe('8080');
+  });
+
+  it('populates callbackPort with the value from the response', () => {
+    receivedCallbacks.response_settings({
+      status: true,
+      message: '',
+      response: {
+        consumerKey: '', consumerSecret: '', loginUrl: '', callbackPort: 4000,
+      },
+    });
+
+    expect(document.getElementById('settings-callback-port').value).toBe('4000');
+  });
+
+  it('defaults callbackPort to 3835 when the response value is absent', () => {
+    receivedCallbacks.response_settings({
+      status: true,
+      message: '',
+      response: { consumerKey: '', consumerSecret: '', loginUrl: '' },
+    });
+
+    expect(document.getElementById('settings-callback-port').value).toBe('3835');
   });
 
   it('sets status message to "Settings saved." when status is true and message is "Settings Saved"', () => {
@@ -181,5 +206,58 @@ describe('response_settings handler', () => {
     });
 
     expect(document.getElementById('settings-status-message').innerText).toBe('An error occurred saving settings.');
+  });
+});
+
+// ── sf_save_settings ───────────────────────────────────────────────────────
+describe('sf_save_settings send', () => {
+  beforeEach(() => {
+    mockSend.mockClear();
+    document.getElementById('settings-consumer-key').value = '';
+    document.getElementById('settings-consumer-secret').value = '';
+    document.getElementById('settings-login-url').value = '';
+    document.getElementById('settings-callback-port').value = '';
+  });
+
+  it('includes callbackPort in the payload when a valid port is entered', () => {
+    document.getElementById('settings-consumer-key').value = 'testKey';
+    document.getElementById('settings-consumer-secret').value = 'testSecret';
+    document.getElementById('settings-login-url').value = 'https://login.salesforce.com';
+    document.getElementById('settings-callback-port').value = '4000';
+
+    document.getElementById('settings-save-trigger').click();
+
+    expect(mockSend).toHaveBeenCalledWith('sf_save_settings', {
+      consumerKey: 'testKey',
+      consumerSecret: 'testSecret',
+      loginUrl: 'https://login.salesforce.com',
+      callbackPort: 4000,
+    });
+  });
+
+  it('falls back to 3835 when callbackPort field is empty', () => {
+    document.getElementById('settings-consumer-key').value = 'k';
+    document.getElementById('settings-consumer-secret').value = 's';
+    document.getElementById('settings-login-url').value = 'https://login.salesforce.com';
+    document.getElementById('settings-callback-port').value = '';
+
+    document.getElementById('settings-save-trigger').click();
+
+    expect(mockSend).toHaveBeenCalledWith('sf_save_settings', expect.objectContaining({
+      callbackPort: 3835,
+    }));
+  });
+
+  it('sends the default port 3835 when the field value is already 3835', () => {
+    document.getElementById('settings-consumer-key').value = 'k';
+    document.getElementById('settings-consumer-secret').value = 's';
+    document.getElementById('settings-login-url').value = 'https://login.salesforce.com';
+    document.getElementById('settings-callback-port').value = '3835';
+
+    document.getElementById('settings-save-trigger').click();
+
+    expect(mockSend).toHaveBeenCalledWith('sf_save_settings', expect.objectContaining({
+      callbackPort: 3835,
+    }));
   });
 });

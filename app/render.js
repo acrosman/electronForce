@@ -748,10 +748,7 @@ window.api.receive('response_settings', (data) => {
     document.getElementById('settings-consumer-key').value = data.response.consumerKey ?? '';
     document.getElementById('settings-consumer-secret').value = data.response.consumerSecret ?? '';
     document.getElementById('settings-login-url').value = data.response.loginUrl || 'https://login.salesforce.com';
-    const callbackPortEl = document.getElementById('settings-callback-port');
-    if (callbackPortEl) {
-      callbackPortEl.value = data.response.callbackPort ?? '';
-    }
+    document.getElementById('settings-callback-port').value = data.response.callbackPort ?? 3835;
   }
   const statusEl = document.getElementById('settings-status-message');
   if (statusEl) {
@@ -787,6 +784,7 @@ document.getElementById('settings-save-trigger').addEventListener('click', () =>
     consumerKey: document.getElementById('settings-consumer-key').value,
     consumerSecret: document.getElementById('settings-consumer-secret').value,
     loginUrl: document.getElementById('settings-login-url').value,
+    callbackPort: parseInt(document.getElementById('settings-callback-port').value, 10) || 3835,
   });
 });
 
