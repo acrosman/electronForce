@@ -744,15 +744,23 @@ window.api.receive('response_permset_detail', (data) => {
 
 // Settings response — populate the settings form fields.
 window.api.receive('response_settings', (data) => {
-  if (data.status && data.response) {
-    if (data.response.consumerKey) {
-      document.getElementById('settings-consumer-key').value = data.response.consumerKey;
+  if (data.response) {
+    document.getElementById('settings-consumer-key').value = data.response.consumerKey ?? '';
+    document.getElementById('settings-consumer-secret').value = data.response.consumerSecret ?? '';
+    document.getElementById('settings-login-url').value = data.response.loginUrl || 'https://login.salesforce.com';
+    const callbackPortEl = document.getElementById('settings-callback-port');
+    if (callbackPortEl) {
+      callbackPortEl.value = data.response.callbackPort ?? '';
     }
-    if (data.response.consumerSecret) {
-      document.getElementById('settings-consumer-secret').value = data.response.consumerSecret;
-    }
-    if (data.response.loginUrl) {
-      document.getElementById('settings-login-url').value = data.response.loginUrl;
+  }
+  const statusEl = document.getElementById('settings-status-message');
+  if (statusEl) {
+    if (data.status && data.message === 'Settings Saved') {
+      statusEl.innerText = 'Settings saved.';
+    } else if (!data.status) {
+      statusEl.innerText = data.message || 'An error occurred saving settings.';
+    } else {
+      statusEl.innerText = '';
     }
   }
 });

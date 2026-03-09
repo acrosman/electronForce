@@ -31,6 +31,21 @@ function createDomFixtures() {
     el.id = 'login-response-message';
     document.body.appendChild(el);
   }
+
+  // Settings form fields and status message.
+  ['settings-consumer-key', 'settings-consumer-secret', 'settings-login-url'].forEach((id) => {
+    if (!document.getElementById(id)) {
+      const el = document.createElement('input');
+      el.id = id;
+      document.body.appendChild(el);
+    }
+  });
+
+  if (!document.getElementById('settings-status-message')) {
+    const el = document.createElement('span');
+    el.id = 'settings-status-message';
+    document.body.appendChild(el);
+  }
 }
 
 beforeAll(() => {
@@ -94,5 +109,77 @@ describe('response_oauth_url handler', () => {
 
     const loginCall = mockSend.mock.calls.find(([channel]) => channel === 'sf_login');
     expect(loginCall).toBeUndefined();
+  });
+});
+// ── response_settings ──────────────────────────────────────────────────────
+describe('response_settings handler', () => {
+  beforeEach(() => {
+    // Reset field values before each test.
+    document.getElementById('settings-consumer-key').value = '';
+    document.getElementById('settings-consumer-secret').value = '';
+    document.getElementById('settings-login-url').value = '';
+    document.getElementById('settings-status-message').innerText = '';
+  });
+
+  it('registers a receive listener for response_settings', () => {
+    expect(receivedCallbacks.response_settings).toBeDefined();
+  });
+
+  it('populates fields with empty strings when response values are empty strings', () => {
+    receivedCallbacks.response_settings({
+      status: true,
+      message: '',
+      response: { consumerKey: '', consumerSecret: '', loginUrl: '' },
+    });
+
+    expect(document.getElementById('settings-consumer-key').value).toBe('');
+    expect(document.getElementById('settings-consumer-secret').value).toBe('');
+    expect(document.getElementById('settings-login-url').value).toBe('https://login.salesforce.com');
+  });
+
+  it('populates fields with provided non-empty values', () => {
+    receivedCallbacks.response_settings({
+      status: true,
+      message: '',
+      response: {
+        consumerKey: 'myKey',
+        consumerSecret: 'mySecret',
+        loginUrl: 'https://test.salesforce.com',
+      },
+    });
+
+    expect(document.getElementById('settings-consumer-key').value).toBe('myKey');
+    expect(document.getElementById('settings-consumer-secret').value).toBe('mySecret');
+    expect(document.getElementById('settings-login-url').value).toBe('https://test.salesforce.com');
+  });
+
+  it('sets status message to "Settings saved." when status is true and message is "Settings Saved"', () => {
+    receivedCallbacks.response_settings({
+      status: true,
+      message: 'Settings Saved',
+      response: { consumerKey: 'k', consumerSecret: 's', loginUrl: 'https://login.salesforce.com' },
+    });
+
+    expect(document.getElementById('settings-status-message').innerText).toBe('Settings saved.');
+  });
+
+  it('shows error message text when status is false', () => {
+    receivedCallbacks.response_settings({
+      status: false,
+      message: 'Failed to save settings.',
+      response: {},
+    });
+
+    expect(document.getElementById('settings-status-message').innerText).toBe('Failed to save settings.');
+  });
+
+  it('falls back to generic error text when status is false and message is absent', () => {
+    receivedCallbacks.response_settings({
+      status: false,
+      message: '',
+      response: {},
+    });
+
+    expect(document.getElementById('settings-status-message').innerText).toBe('An error occurred saving settings.');
   });
 });
