@@ -24,6 +24,11 @@ electronForce/
 ├── .github/
 │   ├── workflows/       # CI workflows: lint.yml and codeql-analysis.yml
 │   └── ISSUE_TEMPLATE/  # Bug report and feature request templates
+├── tests/
+│   ├── electronForce.test.js  # Tests for src/electronForce.js IPC handlers
+│   ├── handlers.test.js       # Tests for individual handler logic
+│   ├── render.test.js         # Tests for app/render.js renderer logic
+│   └── settings.test.js       # Tests for src/settings.js read/write logic
 ├── .husky/
 │   └── pre-commit       # Runs lint and tests before every commit
 ├── .eslintrc.js         # ESLint configuration (airbnb-base)
@@ -42,9 +47,14 @@ ElectronForce follows the standard Electron two-process model with strict securi
 
 ### IPC Channel Convention
 
-- Channels sent **from the renderer to the main process** use the prefix `sf_` (e.g., `sf_login`, `sf_query`) or `get_` (e.g., `get_log_messages`).
-- Channels sent **from the main process back to the renderer** use the prefix `response_` (e.g., `response_login`, `response_query`, `response_generic`).
+- Channels sent **from the renderer to the main process** use the prefix `sf_` (e.g., `sf_oauth_start`, `sf_query`) or `get_` (e.g., `get_log_messages`). Note: `sf_oauth_start` is the current authentication entry point; `sf_login` is no longer used.
+- Settings persistence uses `sf_get_settings` and `sf_save_settings`; the main process responds on `response_settings`.
+- Channels sent **from the main process back to the renderer** use the prefix `response_` (e.g., `response_query`, `response_generic`, `response_settings`).
 - Every new handler added to `src/electronForce.js` must also be added to the `validChannels` allow-list in `app/preload.js`.
+
+### Authentication
+
+Authentication uses Salesforce OAuth 2.0 via a Salesforce External Client App. The main process opens the authorization URL in the system browser via `shell.openExternal`. A one-time local HTTP server (default port 3835, configurable in settings) receives the callback, exchanges the auth code for tokens using `jsforce.OAuth2`, and stores the resulting connection in `sfConnections`. The local server closes after a successful exchange or a 5-minute timeout.
 
 ### Response Payload Shape
 
@@ -70,6 +80,7 @@ This project follows the guidelines described in `contributing.md`. Key points:
 - **Security**: Never enable `nodeIntegration`, `enableRemoteModule`, or disable `contextIsolation` in `BrowserWindow` settings. Keep the preload channel allow-lists up to date.
 - **No unused variables**: The ESLint rule `no-unused-vars` is set to `warn`. Treat warnings as errors before opening a pull request.
 - **Parameter reassignment**: Direct property mutations on function parameters are allowed (`"props": false`), but avoid reassigning the parameter binding itself.
+- **Settings mock**: Any test file that imports or indirectly loads `src/electronForce.js` must include `jest.mock('../src/settings')` to prevent real file-system reads/writes during testing.
 
 ## Testing
 
@@ -78,7 +89,7 @@ Tests are written with [Jest](https://jestjs.io/) and live alongside the source 
 - After any session that modifies code beyond comments, ensure the full test suite passes and linting is clean before considering the work done.
 - When adding new IPC handlers or utility functions, add corresponding Jest tests.
 - Tests for the main-process logic in `src/electronForce.js` should mock `jsforce` and the `mainWindow` object to avoid requiring a live Electron or Salesforce environment.
-- Any test file that needs Electron APIs (e.g., `app.getPath`) should call `jest.mock('electron')` (no factory). Jest will automatically use the shared manual mock at `__mocks__/electron.js`, which returns a temp-directory path for `app.getPath('userData')`. Do not duplicate the mock factory inline in individual test files.
+- Any test file that needs Electron APIs (e.g., `app.getPath`) should call `jest.mock('electron')` (no factory). Jest will automatically use the shared manual mock at `__mocks__/electron.js`, which returns a temp-directory path for `app.getPath('userData')` and exposes `shell.openExternal` as a `jest.fn()` so tests can assert on it without triggering real browser calls. Do not duplicate the mock factory inline in individual test files.
 - The `--passWithNoTests` flag is used for the pre-commit hook so that new files without tests don't block commits, but coverage is expected for substantive logic.
 
 ## Contribution Expectations
