@@ -78,19 +78,18 @@ app.on('window-all-closed', () => {
 // Extra security filters.
 // See also: https://github.com/reZach/secure-electron-template
 app.on('web-contents-created', (event, contents) => {
-  // Block navigation to any non-file:// URL.
-  // The app only ever loads local file:// pages; external URLs (including OAuth
-  // authorization URLs) are opened via shell.openExternal and never cause
-  // Electron navigation. The OAuth localhost callback is handled by the HTTP
-  // server in src/electronForce.js, not by Electron navigation events.
+  // Restrict navigation to the application's own index.html only.
+  // External URLs (including OAuth authorization URLs) are opened via
+  // shell.openExternal and never trigger Electron navigation events.
   // https://electronjs.org/docs/tutorial/security#12-disable-or-limit-navigation
+  const indexUrl = `file://${path.join(app.getAppPath(), 'app', 'index.html')}`;
   contents.on('will-navigate', (navevent, url) => {
-    if (!url.startsWith('file://')) {
+    if (url !== indexUrl) {
       navevent.preventDefault();
     }
   });
   contents.on('will-redirect', (navevent, url) => {
-    if (!url.startsWith('file://')) {
+    if (url !== indexUrl) {
       navevent.preventDefault();
     }
   });

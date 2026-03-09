@@ -749,7 +749,9 @@ window.api.receive('response_permset_detail', (data) => {
 window.api.receive('response_settings', (data) => {
   if (data.response) {
     document.getElementById('settings-consumer-key').value = data.response.consumerKey ?? '';
-    document.getElementById('settings-consumer-secret').value = data.response.consumerSecret ?? '';
+    if ('consumerSecret' in data.response) {
+      document.getElementById('settings-consumer-secret').value = data.response.consumerSecret ?? '';
+    }
     document.getElementById('settings-login-url').value = data.response.loginUrl || 'https://login.salesforce.com';
     document.getElementById('settings-callback-port').value = data.response.callbackPort ?? 3835;
   }

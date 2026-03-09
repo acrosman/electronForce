@@ -207,6 +207,18 @@ describe('response_settings handler', () => {
 
     expect(document.getElementById('settings-status-message').innerText).toBe('An error occurred saving settings.');
   });
+
+  it('does not clear the consumerSecret field when consumerSecret is absent from the response', () => {
+    document.getElementById('settings-consumer-secret').value = 'existing-secret';
+
+    receivedCallbacks.response_settings({
+      status: true,
+      message: 'Settings Saved',
+      response: { consumerKey: 'k', loginUrl: 'https://login.salesforce.com' },
+    });
+
+    expect(document.getElementById('settings-consumer-secret').value).toBe('existing-secret');
+  });
 });
 
 // ── sf_save_settings ───────────────────────────────────────────────────────
