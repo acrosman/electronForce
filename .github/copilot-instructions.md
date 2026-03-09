@@ -10,7 +10,10 @@ ElectronForce is an [Electron](https://www.electronjs.org/)-based desktop applic
 electronForce/
 ├── main.js              # Electron main process: window creation, app lifecycle, IPC handler registration
 ├── src/
-│   └── electronForce.js # Core backend logic: JSForce connection management and IPC handler definitions
+│   ├── electronForce.js # Core backend logic: JSForce connection management and IPC handler definitions
+│   └── settings.js      # Read/write persistent user settings via app.getPath('userData')/settings.json
+├── __mocks__/
+│   └── electron.js      # Jest manual mock for the electron module (shared across all test files)
 ├── app/
 │   ├── index.html       # Application UI markup
 │   ├── render.js        # Renderer process logic: UI interaction and IPC send/receive calls
@@ -75,6 +78,7 @@ Tests are written with [Jest](https://jestjs.io/) and live alongside the source 
 - After any session that modifies code beyond comments, ensure the full test suite passes and linting is clean before considering the work done.
 - When adding new IPC handlers or utility functions, add corresponding Jest tests.
 - Tests for the main-process logic in `src/electronForce.js` should mock `jsforce` and the `mainWindow` object to avoid requiring a live Electron or Salesforce environment.
+- Any test file that needs Electron APIs (e.g., `app.getPath`) should call `jest.mock('electron')` (no factory). Jest will automatically use the shared manual mock at `__mocks__/electron.js`, which returns a temp-directory path for `app.getPath('userData')`. Do not duplicate the mock factory inline in individual test files.
 - The `--passWithNoTests` flag is used for the pre-commit hook so that new files without tests don't block commits, but coverage is expected for substantive logic.
 
 ## Contribution Expectations
