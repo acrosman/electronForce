@@ -133,6 +133,13 @@ describe('sf_oauth_start', () => {
     );
   });
 
+  it('closes the server after the 5-minute timeout', async () => {
+    await handlers.sf_oauth_start({}, {});
+    mockServer.close.mockClear();
+    jest.advanceTimersByTime(5 * 60 * 1000);
+    expect(mockServer.close).toHaveBeenCalled();
+  });
+
   // ── Callback server request handler ──────────────────────────────────────
   describe('HTTP callback request handler', () => {
     let requestListener;
