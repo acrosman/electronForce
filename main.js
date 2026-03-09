@@ -5,6 +5,7 @@ const {
   app,
   BrowserWindow,
   ipcMain,
+  shell,
 } = electron;
 
 // Developer Dependencies.
@@ -78,14 +79,11 @@ app.on('window-all-closed', () => {
 // Extra security filters.
 // See also: https://github.com/reZach/secure-electron-template
 app.on('web-contents-created', (event, contents) => {
-  // Block navigation.
-  // https://electronjs.org/docs/tutorial/security#12-disable-or-limit-navigation
-  contents.on('will-navigate', (navevent) => {
-    navevent.preventDefault();
-  });
-  contents.on('will-redirect', (navevent) => {
-    navevent.preventDefault();
-  });
+  // Navigation and redirect blocking are intentionally omitted here.
+  // The OAuth flow opens an external browser via shell.openExternal, so no
+  // Electron navigation occurs for the auth redirect. The localhost callback
+  // (e.g. http://localhost:<port>/callback) is handled by the HTTP server in
+  // src/electronForce.js, not by Electron navigation events.
 
   // https://electronjs.org/docs/tutorial/security#11-verify-webview-options-before-creation
   contents.on('will-attach-webview', (webevent, webPreferences) => {
@@ -116,4 +114,14 @@ app.on('activate', () => {
 const efHandlers = Object.getOwnPropertyNames(electronForce.handlers);
 efHandlers.forEach((value) => {
   ipcMain.on(value, electronForce.handlers[value]);
+});
+
+// Open a URL in the user's default browser.
+// The renderer sends the URL received from response_oauth_url so the user can
+// manually re-open the auth page if needed.
+ipcMain.on('sf_open_browser', (event, args) => {
+  const { url } = args;
+  if (url) {
+    shell.openExternal(url);
+  }
 });
