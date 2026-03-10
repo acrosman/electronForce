@@ -1,6 +1,14 @@
-/* global $ */
+/* global $, bootstrap */
 // Initial interface setup using jQuery (since it's around from bootstrap anyway).
+
+// Module-level connection state.
+let settingsCache = {};
+let activeOrgId = null;
+
 $.when($.ready).then(() => {
+  // Load settings immediately so we can check them when the user clicks Connect.
+  window.api.send('sf_get_settings', {});
+
   // Hide the places for handling responses until we have some.
   $('#org-status').hide();
   $('#api-request-form').hide();
@@ -41,7 +49,7 @@ $.when($.ready).then(() => {
           event.currentTarget.wrapperElement,
         );
         // Send the currently selected org.
-        const data = { org: $('#active-org').val() };
+        const data = { org: activeOrgId };
 
         // Add all the form items with the needed class, swap - for _ in ids.
         dataElements.each((index, item) => {
@@ -77,7 +85,7 @@ $.when($.ready).then(() => {
 
   // Setup event listener for when the console modal opens,
   // pull in the most recent 50 messages.
-  $('#consoleModal').on('show.bs.modal', (event) => {
+  $('#consoleModal').on('show.bs.modal', () => {
     // Clear existing messages.
     const messageTable = document.querySelector('#consoleMessageTable');
     while (messageTable.rows.length > 1) {
@@ -622,25 +630,24 @@ const displayPermSetList = (data) => {
 };
 
 // ===== Response handlers from IPC Messages to render context ======
+// OAuth URL response — main process already opened the browser via shell.openExternal.
+window.api.receive('response_oauth_url', () => {
+  replaceText('login-response-message', 'Waiting for authorization in browser…');
+});
+
 // Login response.
 window.api.receive('response_login', (data) => {
   if (data.status) {
-    // Check for an existing connection in the drop down.
-    const orgSelect = document.getElementById('active-org');
-    const existingOption = document.getElementById(`sforg-${data.response.organizationId}`);
+    // Track the single active connection.
+    activeOrgId = data.response.organizationId;
 
-    if (!existingOption) {
-      // Add the new connection to the list of options.
-      const opt = document.createElement('option');
-      opt.value = data.response.organizationId;
-      opt.innerHTML = data.request.username;
-      opt.id = `sforg-${opt.value}`;
-      orgSelect.appendChild(opt);
-    } else {
-      existingOption.innerHTML = data.request.username;
-    }
+    // Switch the button to "Log Out".
+    const connectBtn = document.getElementById('connect-logout-trigger');
+    connectBtn.textContent = 'Log Out';
+    connectBtn.classList.remove('btn-info');
+    connectBtn.classList.add('btn-warning');
 
-    // Shuffle what's shown.
+    // Show the connected status and tools.
     document.getElementById('org-status').style.display = 'block';
     document.getElementById('api-request-form').style.display = 'block';
     replaceText('active-org-id', data.response.organizationId);
@@ -652,11 +659,23 @@ window.api.receive('response_login', (data) => {
 // Logout Response.
 window.api.receive('response_logout', (data) => {
   displayRawResponse(data);
+  // Clear connection state.
+  activeOrgId = null;
+  document.getElementById('org-status').style.display = 'none';
+  document.getElementById('api-request-form').style.display = 'none';
+  // Switch the button back to "Create New Connection".
+  const connectBtn = document.getElementById('connect-logout-trigger');
+  connectBtn.textContent = 'Create New Connection';
+  connectBtn.classList.remove('btn-warning');
+  connectBtn.classList.add('btn-info');
 });
 
 // Generic Response.
 window.api.receive('response_generic', (data) => {
   displayRawResponse(data);
+  if (!data.status) {
+    replaceText('login-response-message', data.message);
+  }
 });
 
 // Query Response. Print the query results in table.
@@ -737,24 +756,61 @@ window.api.receive('response_permset_detail', (data) => {
   }
 });
 
+// Settings response — populate the settings form fields and refresh the local cache.
+window.api.receive('response_settings', (data) => {
+  if (data.response) {
+    // Keep a local copy so the connect button can check settings without an extra IPC round-trip.
+    settingsCache = { ...data.response };
+    document.getElementById('settings-consumer-key').value = data.response.consumerKey ?? '';
+    if ('consumerSecret' in data.response) {
+      document.getElementById('settings-consumer-secret').value = data.response.consumerSecret ?? '';
+    }
+    document.getElementById('settings-login-url').value = data.response.loginUrl || 'https://login.salesforce.com';
+    document.getElementById('settings-callback-port').value = data.response.callbackPort ?? 3835;
+  }
+  const statusEl = document.getElementById('settings-status-message');
+  if (statusEl) {
+    if (data.status && data.message === 'Settings Saved') {
+      statusEl.innerText = 'Settings saved.';
+    } else if (!data.status) {
+      statusEl.innerText = data.message || 'An error occurred saving settings.';
+    } else {
+      statusEl.innerText = '';
+    }
+  }
+});
+
 // Process a log message.
 window.api.receive('log_messages', (data) => {
   displayMessages(data.messages);
 });
 
 // ========= Messages to the main process ===============
-// Login
-document.getElementById('login-trigger').addEventListener('click', () => {
-  window.api.send('sf_login', {
-    username: document.getElementById('login-username').value,
-    password: document.getElementById('login-password').value,
-    token: document.getElementById('login-token').value,
-    url: document.getElementById('login-url').value,
-  });
+// Connect / Log Out — single button that toggles based on connection state.
+document.getElementById('connect-logout-trigger').addEventListener('click', () => {
+  if (activeOrgId) {
+    // Currently connected: log out.
+    window.api.send('sf_logout', { org: activeOrgId });
+  } else if (!settingsCache.consumerKey) {
+    // No credentials configured: open the settings modal so the user can fill them in.
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).show();
+  } else {
+    // Credentials look valid: start the OAuth flow.
+    window.api.send('sf_oauth_start', {});
+  }
 });
 
-// Logout
-document.getElementById('logout-trigger').addEventListener('click', () => {
-  window.api.send('sf_logout', { org: document.getElementById('active-org').value });
-  document.getElementById('org-status').style.display = 'none';
+// Settings — load settings when the modal opens.
+document.getElementById('settingsModal').addEventListener('show.bs.modal', () => {
+  window.api.send('sf_get_settings', {});
+});
+
+// Settings — save settings on button click.
+document.getElementById('settings-save-trigger').addEventListener('click', () => {
+  window.api.send('sf_save_settings', {
+    consumerKey: document.getElementById('settings-consumer-key').value,
+    consumerSecret: document.getElementById('settings-consumer-secret').value,
+    loginUrl: document.getElementById('settings-login-url').value,
+    callbackPort: parseInt(document.getElementById('settings-callback-port').value, 10) || 3835,
+  });
 });

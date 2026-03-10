@@ -55,67 +55,63 @@
                             This is a Salesforce API interface build using JSForce and Electron. It allows basic
                             interactions with Salesforce remote APIs to assist development and testing.
                         </p>
-                        <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal"
-                            data-bs-target="#loginModal">Create New Connection</button>
+                        <button type="button" class="btn btn-info btn-lg" id="connect-logout-trigger">Create New
+                            Connection</button>
+                        <button type="button" class="btn btn-secondary btn-lg" data-bs-toggle="modal"
+                            data-bs-target="#settingsModal">Settings</button>
                     </div>
                     <div class="card-footer" id="org-status">
-                        <label for="active-org">Active Org for next action.</label>
-                        <select id="active-org" class="custom-select"></select>
                         <p>Message: <span id="login-response-message"></span><br>
                             Org Id: <span id="active-org-id"></span></p>
-                        <button type="button" id="logout-trigger" class="btn btn-warning" value="Logout">Logout</button>
                     </div>
 
-                    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog"
-                        aria-labelledby="loginModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="loginModalLabel">Enter Salesforce Login</h5>
-                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form>
-                                        <div class="form-group">
-                                            <label for="login-username">User Name</label>
-                                            <input type="text" id="login-username" class="form-control"
-                                                aria-describedby="usernameHelp" placeholder="Enter Salesforce Username">
-                                            <small id="usernameHelp" class="form-text">Your Salesforce username must be
-                                                in the form of an email address.</small>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="login-password">Password</label>
-                                            <input type="password" id="login-password" class="form-control">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="login-token">Security Token</label>
-                                            <input type="password" class="form-control" aria-describedby="tokenHelp"
-                                                id="login-token">
-                                            <small id="tokenHelp" class="form-text">Likely you will need your Saleforce
-                                                Security token. If you do not have it follow <a
-                                                    href='https://help.salesforce.com/articleView?id=user_security_token.htm&type=5'>these
-                                                    reset instructions.</a></small>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="login-url">Login URL</label>
-                                            <input type="url" id="login-url" class="form-control"
-                                                value="https://login.salesforce.com">
-                                        </div>
-                                    </form>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" id="login-trigger"
-                                        data-bs-dismiss="modal">Connect</button>
-                                </div>
+
+                </div>
+            </div>
+
+            <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="settings-consumer-key">Consumer Key</label>
+                                <input type="text" class="form-control" id="settings-consumer-key">
                             </div>
+                            <div class="form-group">
+                                <label for="settings-consumer-secret">Consumer Secret</label>
+                                <input type="password" class="form-control" id="settings-consumer-secret">
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-login-url">Login URL</label>
+                                <input type="text" class="form-control" id="settings-login-url"
+                                    value="https://login.salesforce.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-callback-port">OAuth Callback Port</label>
+                                <input type="number" class="form-control" id="settings-callback-port" min="1024"
+                                    max="65535" value="3835">
+                                <small class="form-text">The local port used to receive the OAuth callback. Default:
+                                    3835.</small>
+                            </div>
+                            <p><span id="settings-status-message"></span></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="settings-save-trigger"
+                                data-bs-dismiss="modal">Save
+                                Settings</button>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="col-md-8">
                 <div class="card bg-default" id=raw-response-wrapper>
                     <h2>Last Response:</h2>

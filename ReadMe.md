@@ -15,17 +15,37 @@ From your terminal:
     npm install
     npm start
 
-ElectronForce will allow you to log into your Salesforce Org and interact with some of the APIs. While all of JSForce's supported APIs are listed, only Query, Search, and Describe are currently support.
+ElectronForce uses OAuth to connect to your Salesforce Org and interact with the APIs. While all of JSForce's supported APIs are listed, only Query, Search, and Describe are currently supported.
 
-### Log in
+### Setup: Create a Salesforce External Client App
 
-Currently only the standard login is supported, not OAuth2, so you likely will need your [security token](https://help.salesforce.com/articleView?id=user_security_token.htm&type=5).
+Before connecting ElectronForce to a Salesforce org you need to create an External Client App to generate OAuth credentials:
 
-In the login fields provide your username, password, and security token. If you are logging into a production or trailhead instance you can use the default login URL. If you are logging into a Sandbox use: https://test.salesforce.com.
+1. In Salesforce, navigate to **Setup → App Manager** (use Quick Find if needed).
+2. Click **New External Client App**.
+3. Enter a **Name** and accept or edit the generated **API Name**.
+4. Enter a **Contact Email**.
+5. Set the **Distribution State** to **Local** (for use only in this org).
+6. Save the app, then edit it and enable **OAuth**.
+7. In the OAuth settings, set the **Callback URL** to `http://localhost:3835/callback`.
+8. Add the following **OAuth Scopes**: `api` and `refresh_token`.
+9. Save. Copy the **Consumer Key** (Client ID) and **Consumer Secret** from the OAuth detail page.
+
+For full details see the Salesforce Help article [Create an External Client App](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5).
+
+### Configure ElectronForce
+
+Open the **Settings** modal in ElectronForce and enter the **Consumer Key** and **Consumer Secret** from your External Client App. If you are connecting to a sandbox org, set the **Login URL** to `https://test.salesforce.com`. For production and Trailhead orgs the default login URL (`https://login.salesforce.com`) can be used.
+
+> **Security note:** The Consumer Key and Consumer Secret are encrypted at rest using [`electron.safeStorage`](https://www.electronjs.org/docs/latest/api/safe-storage), which delegates to the OS-level credential store (Keychain on macOS, the secret service on Linux, DPAPI on Windows). On platforms where OS-level encryption is unavailable, the values fall back to plain text in the application's user-data directory.
+
+### Connect to Salesforce
+
+Click the **Connect via OAuth** button. ElectronForce will open the Salesforce login page in your default browser. After you approve access, Salesforce redirects to the local callback URL and ElectronForce completes the OAuth handshake automatically.
 
 ![ElectronForce Main screen.](./documentation/images/ElectronForceMain.png "Login fields as described above and query API example as follows.")
 
-The main interface includes the login information, API selector and parameter fields on the left, raw display of the previous API response on the right, and a processed version of the response at the bottom.
+The main interface includes the API selector and parameter fields on the left, raw display of the previous API response on the right, and a processed version of the response at the bottom.
 
 ### Run Query or Search
 

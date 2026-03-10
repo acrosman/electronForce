@@ -78,13 +78,20 @@ app.on('window-all-closed', () => {
 // Extra security filters.
 // See also: https://github.com/reZach/secure-electron-template
 app.on('web-contents-created', (event, contents) => {
-  // Block navigation.
+  // Restrict navigation to the application's own index.html only.
+  // External URLs (including OAuth authorization URLs) are opened via
+  // shell.openExternal and never trigger Electron navigation events.
   // https://electronjs.org/docs/tutorial/security#12-disable-or-limit-navigation
-  contents.on('will-navigate', (navevent) => {
-    navevent.preventDefault();
+  const indexUrl = `file://${path.join(app.getAppPath(), 'app', 'index.html')}`;
+  contents.on('will-navigate', (navevent, url) => {
+    if (url !== indexUrl) {
+      navevent.preventDefault();
+    }
   });
-  contents.on('will-redirect', (navevent) => {
-    navevent.preventDefault();
+  contents.on('will-redirect', (navevent, url) => {
+    if (url !== indexUrl) {
+      navevent.preventDefault();
+    }
   });
 
   // https://electronjs.org/docs/tutorial/security#11-verify-webview-options-before-creation

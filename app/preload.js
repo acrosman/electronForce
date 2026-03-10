@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld(
       // The electronForce handlers are the list of valid channels.
       const validChannels = [
         'get_log_messages',
-        'sf_login',
+        'sf_oauth_start',
         'sf_logout',
         'sf_query',
         'sf_search',
@@ -22,6 +22,8 @@ contextBridge.exposeInMainWorld(
         'sf_orgProfiles',
         'sf_orgPermSets',
         'sf_orgPermSetDetail',
+        'sf_get_settings',
+        'sf_save_settings',
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
@@ -30,6 +32,7 @@ contextBridge.exposeInMainWorld(
     receive: (channel, func) => {
       const validChannels = [
         'log_messages',
+        'response_oauth_url',
         'response_login',
         'response_logout',
         'response_query',
@@ -40,6 +43,7 @@ contextBridge.exposeInMainWorld(
         'response_permset_list',
         'response_permset_detail',
         'response_generic',
+        'response_settings',
       ];
       if (validChannels.includes(channel)) {
         // Remove the event to avoid information leaks.
