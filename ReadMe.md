@@ -26,10 +26,10 @@ Before connecting ElectronForce to a Salesforce org you need to create an Extern
 3. Enter a **Name** and accept or edit the generated **API Name**.
 4. Enter a **Contact Email**.
 5. Set the **Distribution State** to **Local** (for use only in this org).
-6. Save the app, then open it and enable the **OAuth Plugin**.
-7. In the OAuth plugin settings, set the **Callback URL** to `http://localhost:3835/callback`.
+6. Save the app, then edit it and enable **OAuth**.
+7. In the OAuth settings, set the **Callback URL** to `http://localhost:3835/callback`.
 8. Add the following **OAuth Scopes**: `api` and `refresh_token`.
-9. Save. Copy the **Consumer Key** (Client ID) and **Consumer Secret** from the OAuth plugin detail page.
+9. Save. Copy the **Consumer Key** (Client ID) and **Consumer Secret** from the OAuth detail page.
 
 For full details see the Salesforce Help article [Create an External Client App](https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&type=5).
 
