@@ -98,6 +98,7 @@ describe('sf_oauth_start', () => {
       clientSecret: 'test-client-secret',
       redirectUri: 'http://localhost:3835/callback',
       loginUrl: 'https://login.salesforce.com',
+      useVerifier: true,
     });
   });
 

@@ -9,6 +9,7 @@ const settings = require('./settings');
 const sfConnections = {};
 const logMessages = [];
 let mainWindow = null;
+let oauthCallbackServer = null;
 
 const setWindow = (window) => {
   mainWindow = window;
@@ -71,11 +72,20 @@ const handlers = {
 
       const port = callbackPort || 3835;
 
+      // Close any previously open callback server before starting a new one.
+      if (oauthCallbackServer) {
+        oauthCallbackServer.close();
+        oauthCallbackServer = null;
+      }
+
+      // useVerifier enables PKCE: jsforce generates a code_verifier, includes
+      // the code_challenge in the auth URL, and sends the verifier at token exchange.
       const oauth2 = new jsforce.OAuth2({
         clientId: consumerKey,
         clientSecret: consumerSecret,
         redirectUri: `http://localhost:${port}/callback`,
         loginUrl,
+        useVerifier: true,
       });
 
       const state = crypto.randomBytes(16).toString('hex');
@@ -179,6 +189,7 @@ const handlers = {
         }
       });
 
+      oauthCallbackServer = server;
       server.listen(port, '127.0.0.1');
 
       server.on('error', (serverErr) => {
@@ -200,6 +211,7 @@ const handlers = {
 
       server.on('close', () => {
         clearTimeout(timeout);
+        oauthCallbackServer = null;
       });
     } catch (err) {
       logMessage('Error', `OAuth Start Failed: ${err}`);
