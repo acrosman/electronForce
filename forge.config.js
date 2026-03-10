@@ -1,13 +1,12 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-const { utils: { fromBuildIdentifier
-}
-} = require('@electron-forge/core');
+const { utils: { fromBuildIdentifier } } = require('@electron-forge/core');
 
 module.exports = {
   buildIdentifier: process.env.IS_BETA ? 'beta' : 'prod',
   packagerConfig: {
     appBundleId: fromBuildIdentifier({
-      beta: 'com.beta.acrosman.ElectronForce', prod: 'com.ElectronForce'
+      beta: 'com.beta.acrosman.ElectronForce',
+      prod: 'com.ElectronForce',
     }),
   },
   rebuildConfig: {},
@@ -22,8 +21,7 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin', 'linux'
-      ],
+      platforms: ['darwin', 'linux'],
     },
     {
       name: '@electron-forge/maker-rpm',

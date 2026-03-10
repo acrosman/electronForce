@@ -85,7 +85,7 @@ $.when($.ready).then(() => {
 
   // Setup event listener for when the console modal opens,
   // pull in the most recent 50 messages.
-  $('#consoleModal').on('show.bs.modal', (event) => {
+  $('#consoleModal').on('show.bs.modal', () => {
     // Clear existing messages.
     const messageTable = document.querySelector('#consoleMessageTable');
     while (messageTable.rows.length > 1) {
