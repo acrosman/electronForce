@@ -37,7 +37,7 @@ For full details see the Salesforce Help article [Create an External Client App]
 
 Open the **Settings** modal in ElectronForce and enter the **Consumer Key** and **Consumer Secret** from your External Client App. If you are connecting to a sandbox org, set the **Login URL** to `https://test.salesforce.com`. For production and Trailhead orgs the default login URL (`https://login.salesforce.com`) can be used.
 
-> **Security note:** Credentials are currently stored in plain text in the application's user-data directory. For a hardened or shared installation, consider upgrading to [`electron.safeStorage`](https://www.electronjs.org/docs/latest/api/safe-storage) for OS-level encryption of stored secrets.
+> **Security note:** The Consumer Key and Consumer Secret are encrypted at rest using [`electron.safeStorage`](https://www.electronjs.org/docs/latest/api/safe-storage), which delegates to the OS-level credential store (Keychain on macOS, the secret service on Linux, DPAPI on Windows). On platforms where OS-level encryption is unavailable, the values fall back to plain text in the application's user-data directory.
 
 ### Connect to Salesforce
 

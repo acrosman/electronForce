@@ -10,6 +10,7 @@ const SETTINGS_FILE = path.join(TEST_USER_DATA, 'settings.json');
 jest.mock('electron');
 
 // Required AFTER the mock is registered.
+const { safeStorage } = require('electron');
 const { getSettings, saveSettings, getSetting } = require('../src/settings');
 
 describe('settings', () => {
@@ -133,6 +134,85 @@ describe('settings', () => {
 
     it('returns undefined for a missing key when no default is provided', () => {
       expect(getSetting('nonExistentKey')).toBeUndefined();
+    });
+  });
+
+  describe('safeStorage encryption', () => {
+    it('stores sensitive fields as encrypted "enc:" values on disk', () => {
+      const data = {
+        consumerKey: 'my-key',
+        consumerSecret: 'my-secret',
+        loginUrl: 'https://login.salesforce.com',
+        callbackPort: 3835,
+      };
+
+      saveSettings(data);
+
+      const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+      expect(raw.consumerKey).toMatch(/^enc:/);
+      expect(raw.consumerSecret).toMatch(/^enc:/);
+      // Non-sensitive fields are stored as plain values.
+      expect(raw.loginUrl).toBe('https://login.salesforce.com');
+      expect(raw.callbackPort).toBe(3835);
+    });
+
+    it('round-trips sensitive fields transparently through encrypt/decrypt', () => {
+      saveSettings({
+        consumerKey: 'round-key',
+        consumerSecret: 'round-secret',
+        loginUrl: 'https://login.salesforce.com',
+        callbackPort: 3835,
+      });
+
+      const loaded = getSettings();
+
+      expect(loaded.consumerKey).toBe('round-key');
+      expect(loaded.consumerSecret).toBe('round-secret');
+    });
+
+    it('reads legacy plain-text sensitive fields without decrypting them', () => {
+      // Simulate a settings file written before encryption was introduced.
+      const legacy = {
+        consumerKey: 'legacy-key',
+        consumerSecret: 'legacy-secret',
+        loginUrl: 'https://login.salesforce.com',
+        callbackPort: 3835,
+      };
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify(legacy), 'utf8');
+
+      const loaded = getSettings();
+
+      expect(loaded.consumerKey).toBe('legacy-key');
+      expect(loaded.consumerSecret).toBe('legacy-secret');
+    });
+
+    it('stores sensitive fields as plain text when encryption is unavailable', () => {
+      // mockReturnValue affects all subsequent calls; restore to true afterward
+      // so other tests are not affected.
+      safeStorage.isEncryptionAvailable.mockReturnValue(false);
+      try {
+        saveSettings({ consumerKey: 'plain-key', consumerSecret: 'plain-secret' });
+
+        const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+        expect(raw.consumerKey).toBe('plain-key');
+        expect(raw.consumerSecret).toBe('plain-secret');
+      } finally {
+        safeStorage.isEncryptionAvailable.mockReturnValue(true);
+      }
+    });
+
+    it('decrypts values correctly even when isEncryptionAvailable returns false at read time', () => {
+      // Save encrypted values while encryption is available.
+      saveSettings({ consumerKey: 'check-key', consumerSecret: 'check-secret' });
+
+      // decryptField does not gate on isEncryptionAvailable – it only checks
+      // for the "enc:" prefix and calls safeStorage.decryptString directly.
+      // This test confirms no crash and correct round-trip regardless of what
+      // isEncryptionAvailable returns when the settings file is read back.
+      safeStorage.isEncryptionAvailable.mockReturnValueOnce(false);
+
+      const loaded = getSettings();
+      expect(loaded.consumerKey).toBe('check-key');
     });
   });
 });
