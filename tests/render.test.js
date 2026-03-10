@@ -5,10 +5,9 @@
 // render.js uses module-level addEventListener calls that require these elements
 // to exist in the DOM before the module is loaded.
 const MODULE_LEVEL_IDS = [
-  'authorize-trigger',
+  'connect-logout-trigger',
   'settingsModal',
   'settings-save-trigger',
-  'logout-trigger',
 ];
 
 // Map to capture callbacks registered via window.api.receive.
@@ -32,6 +31,27 @@ function createDomFixtures() {
     document.body.appendChild(el);
   }
 
+  // Elements updated by response_login / response_logout.
+  ['org-status', 'api-request-form'].forEach((id) => {
+    if (!document.getElementById(id)) {
+      const el = document.createElement('div');
+      el.id = id;
+      document.body.appendChild(el);
+    }
+  });
+
+  if (!document.getElementById('active-org-id')) {
+    const el = document.createElement('span');
+    el.id = 'active-org-id';
+    document.body.appendChild(el);
+  }
+
+  if (!document.getElementById('raw-response')) {
+    const el = document.createElement('pre');
+    el.id = 'raw-response';
+    document.body.appendChild(el);
+  }
+
   // Settings form fields and status message.
   ['settings-consumer-key', 'settings-consumer-secret', 'settings-login-url', 'settings-callback-port'].forEach((id) => {
     if (!document.getElementById(id)) {
@@ -51,6 +71,14 @@ function createDomFixtures() {
 beforeAll(() => {
   createDomFixtures();
 
+  // Mock bootstrap so the connect-logout-trigger click handler can call
+  // bootstrap.Modal.getOrCreateInstance without throwing in jsdom.
+  global.bootstrap = {
+    Modal: {
+      getOrCreateInstance: jest.fn(() => ({ show: jest.fn() })),
+    },
+  };
+
   // Mock jQuery so the $.when($.ready).then(...) block at the top of render.js
   // doesn't throw.  The callback is swallowed and never invoked, which prevents
   // all the complex UI setup code from running during tests.
@@ -59,6 +87,7 @@ beforeAll(() => {
     show: jest.fn(),
     on: jest.fn(),
     text: jest.fn(),
+    jsonViewer: jest.fn(),
   };
   const jqFn = jest.fn(() => jQueryChain);
   jqFn.when = jest.fn(() => ({ then: jest.fn() }));
@@ -111,6 +140,103 @@ describe('response_oauth_url handler', () => {
     expect(loginCall).toBeUndefined();
   });
 });
+// ── response_login ────────────────────────────────────────────────────────
+describe('response_login handler', () => {
+  beforeEach(() => {
+    mockSend.mockClear();
+    // Reset connect button to the disconnected state.
+    const btn = document.getElementById('connect-logout-trigger');
+    btn.textContent = 'Create New Connection';
+    btn.classList.remove('btn-warning');
+    btn.classList.add('btn-info');
+    document.getElementById('org-status').style.display = 'none';
+    document.getElementById('api-request-form').style.display = 'none';
+  });
+
+  it('registers a receive listener for response_login', () => {
+    expect(receivedCallbacks.response_login).toBeDefined();
+  });
+
+  it('changes the button text to "Log Out" on successful login', () => {
+    receivedCallbacks.response_login({
+      status: true,
+      message: 'Login Successful',
+      response: { organizationId: '00Dxx0000001gEQ' },
+      request: { username: 'user@example.com' },
+    });
+
+    expect(document.getElementById('connect-logout-trigger').textContent).toBe('Log Out');
+  });
+
+  it('adds btn-warning class and removes btn-info on login', () => {
+    receivedCallbacks.response_login({
+      status: true,
+      message: 'Login Successful',
+      response: { organizationId: '00Dxx0000001gEQ' },
+      request: { username: 'user@example.com' },
+    });
+
+    const btn = document.getElementById('connect-logout-trigger');
+    expect(btn.classList.contains('btn-warning')).toBe(true);
+    expect(btn.classList.contains('btn-info')).toBe(false);
+  });
+
+  it('shows org-status on successful login', () => {
+    receivedCallbacks.response_login({
+      status: true,
+      message: 'Login Successful',
+      response: { organizationId: '00Dxx0000001gEQ' },
+      request: { username: 'user@example.com' },
+    });
+
+    expect(document.getElementById('org-status').style.display).toBe('block');
+  });
+
+  it('does not change the button when status is false', () => {
+    receivedCallbacks.response_login({ status: false, message: 'Failed' });
+
+    expect(document.getElementById('connect-logout-trigger').textContent).toBe('Create New Connection');
+  });
+});
+
+// ── response_logout ───────────────────────────────────────────────────────
+describe('response_logout handler', () => {
+  beforeEach(() => {
+    mockSend.mockClear();
+    // Simulate a connected state before logout.
+    const btn = document.getElementById('connect-logout-trigger');
+    btn.textContent = 'Log Out';
+    btn.classList.add('btn-warning');
+    btn.classList.remove('btn-info');
+    document.getElementById('org-status').style.display = 'block';
+    document.getElementById('api-request-form').style.display = 'block';
+  });
+
+  it('registers a receive listener for response_logout', () => {
+    expect(receivedCallbacks.response_logout).toBeDefined();
+  });
+
+  it('resets the button text to "Create New Connection"', () => {
+    receivedCallbacks.response_logout({ status: true, message: 'Logout Successful' });
+
+    expect(document.getElementById('connect-logout-trigger').textContent).toBe('Create New Connection');
+  });
+
+  it('adds btn-info class and removes btn-warning after logout', () => {
+    receivedCallbacks.response_logout({ status: true, message: 'Logout Successful' });
+
+    const btn = document.getElementById('connect-logout-trigger');
+    expect(btn.classList.contains('btn-info')).toBe(true);
+    expect(btn.classList.contains('btn-warning')).toBe(false);
+  });
+
+  it('hides org-status after logout', () => {
+    receivedCallbacks.response_logout({ status: true, message: 'Logout Successful' });
+
+    expect(document.getElementById('org-status').style.display).toBe('none');
+  });
+});
+
 // ── response_settings ──────────────────────────────────────────────────────
 describe('response_settings handler', () => {
   beforeEach(() => {

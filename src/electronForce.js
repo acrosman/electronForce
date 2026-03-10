@@ -150,6 +150,9 @@ const handlers = {
           const userInfo = await conn.authorize(code);
           const identity = await conn.identity();
 
+          // Clear any prior connections before storing the new one (single-connection model).
+          Object.keys(sfConnections).forEach((key) => delete sfConnections[key]);
+
           sfConnections[userInfo.organizationId] = {
             instanceUrl: conn.instanceUrl,
             accessToken: conn.accessToken,

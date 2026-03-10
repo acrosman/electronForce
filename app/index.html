@@ -55,40 +55,17 @@
                             This is a Salesforce API interface build using JSForce and Electron. It allows basic
                             interactions with Salesforce remote APIs to assist development and testing.
                         </p>
-                        <button type="button" class="btn btn-info btn-lg" data-bs-toggle="modal"
-                            data-bs-target="#loginModal">Create New Connection</button>
+                        <button type="button" class="btn btn-info btn-lg" id="connect-logout-trigger">Create New
+                            Connection</button>
                         <button type="button" class="btn btn-secondary btn-lg" data-bs-toggle="modal"
                             data-bs-target="#settingsModal">Settings</button>
                     </div>
                     <div class="card-footer" id="org-status">
-                        <label for="active-org">Active Org for next action.</label>
-                        <select id="active-org" class="custom-select"></select>
                         <p>Message: <span id="login-response-message"></span><br>
                             Org Id: <span id="active-org-id"></span></p>
-                        <button type="button" id="logout-trigger" class="btn btn-warning" value="Logout">Logout</button>
                     </div>
 
-                    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog"
-                        aria-labelledby="loginModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="loginModalLabel">Enter Salesforce Login</h5>
-                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <button type="button" class="btn btn-primary btn-block w-100" id="authorize-trigger"
-                                        data-bs-dismiss="modal">Authorize with Salesforce</button>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 

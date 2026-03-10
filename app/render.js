@@ -1,6 +1,14 @@
-/* global $ */
+/* global $, bootstrap */
 // Initial interface setup using jQuery (since it's around from bootstrap anyway).
+
+// Module-level connection state.
+let settingsCache = {};
+let activeOrgId = null;
+
 $.when($.ready).then(() => {
+  // Load settings immediately so we can check them when the user clicks Connect.
+  window.api.send('sf_get_settings', {});
+
   // Hide the places for handling responses until we have some.
   $('#org-status').hide();
   $('#api-request-form').hide();
@@ -41,7 +49,7 @@ $.when($.ready).then(() => {
           event.currentTarget.wrapperElement,
         );
         // Send the currently selected org.
-        const data = { org: $('#active-org').val() };
+        const data = { org: activeOrgId };
 
         // Add all the form items with the needed class, swap - for _ in ids.
         dataElements.each((index, item) => {
@@ -630,22 +638,16 @@ window.api.receive('response_oauth_url', () => {
 // Login response.
 window.api.receive('response_login', (data) => {
   if (data.status) {
-    // Check for an existing connection in the drop down.
-    const orgSelect = document.getElementById('active-org');
-    const existingOption = document.getElementById(`sforg-${data.response.organizationId}`);
+    // Track the single active connection.
+    activeOrgId = data.response.organizationId;
 
-    if (!existingOption) {
-      // Add the new connection to the list of options.
-      const opt = document.createElement('option');
-      opt.value = data.response.organizationId;
-      opt.innerHTML = data.request.username;
-      opt.id = `sforg-${opt.value}`;
-      orgSelect.appendChild(opt);
-    } else {
-      existingOption.innerHTML = data.request.username;
-    }
+    // Switch the button to "Log Out".
+    const connectBtn = document.getElementById('connect-logout-trigger');
+    connectBtn.textContent = 'Log Out';
+    connectBtn.classList.remove('btn-info');
+    connectBtn.classList.add('btn-warning');
 
-    // Shuffle what's shown.
+    // Show the connected status and tools.
     document.getElementById('org-status').style.display = 'block';
     document.getElementById('api-request-form').style.display = 'block';
     replaceText('active-org-id', data.response.organizationId);
@@ -657,6 +659,15 @@ window.api.receive('response_login', (data) => {
 // Logout Response.
 window.api.receive('response_logout', (data) => {
   displayRawResponse(data);
+  // Clear connection state.
+  activeOrgId = null;
+  document.getElementById('org-status').style.display = 'none';
+  document.getElementById('api-request-form').style.display = 'none';
+  // Switch the button back to "Create New Connection".
+  const connectBtn = document.getElementById('connect-logout-trigger');
+  connectBtn.textContent = 'Create New Connection';
+  connectBtn.classList.remove('btn-warning');
+  connectBtn.classList.add('btn-info');
 });
 
 // Generic Response.
@@ -745,9 +756,11 @@ window.api.receive('response_permset_detail', (data) => {
   }
 });
 
-// Settings response — populate the settings form fields.
+// Settings response — populate the settings form fields and refresh the local cache.
 window.api.receive('response_settings', (data) => {
   if (data.response) {
+    // Keep a local copy so the connect button can check settings without an extra IPC round-trip.
+    settingsCache = { ...data.response };
     document.getElementById('settings-consumer-key').value = data.response.consumerKey ?? '';
     if ('consumerSecret' in data.response) {
       document.getElementById('settings-consumer-secret').value = data.response.consumerSecret ?? '';
@@ -773,9 +786,18 @@ window.api.receive('log_messages', (data) => {
 });
 
 // ========= Messages to the main process ===============
-// Login — starts the OAuth flow; the main process opens the browser.
-document.getElementById('authorize-trigger').addEventListener('click', () => {
-  window.api.send('sf_oauth_start', {});
+// Connect / Log Out — single button that toggles based on connection state.
+document.getElementById('connect-logout-trigger').addEventListener('click', () => {
+  if (activeOrgId) {
+    // Currently connected: log out.
+    window.api.send('sf_logout', { org: activeOrgId });
+  } else if (!settingsCache.consumerKey) {
+    // No credentials configured: open the settings modal so the user can fill them in.
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).show();
+  } else {
+    // Credentials look valid: start the OAuth flow.
+    window.api.send('sf_oauth_start', {});
+  }
 });
 
 // Settings — load settings when the modal opens.
@@ -791,10 +813,4 @@ document.getElementById('settings-save-trigger').addEventListener('click', () =>
     loginUrl: document.getElementById('settings-login-url').value,
     callbackPort: parseInt(document.getElementById('settings-callback-port').value, 10) || 3835,
   });
-});
-
-// Logout
-document.getElementById('logout-trigger').addEventListener('click', () => {
-  window.api.send('sf_logout', { org: document.getElementById('active-org').value });
-  document.getElementById('org-status').style.display = 'none';
 });
